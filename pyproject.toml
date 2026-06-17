@@ -1,0 +1,9 @@
+[project]
+name = "pac-man"
+version = "1.0.0"
+description = "Recreating the famous arcade game Pac-man"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "pydantic"
+]
