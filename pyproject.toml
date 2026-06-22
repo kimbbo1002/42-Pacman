@@ -5,5 +5,10 @@ description = "Recreating the famous arcade game Pac-man"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "pydantic"
+    "arcade>=3.3.3",
+    "mazegenerator",
+    "pydantic>=2.13.4",
 ]
+
+[tool.uv.sources]
+mazegenerator = { path = "mazegenerator-2.0.2-py3-none-any.whl" }
