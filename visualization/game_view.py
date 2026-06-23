@@ -1,73 +1,26 @@
-from mazegenerator import MazeGenerator
 from parsing import Config
+from mazegenerator import MazeGenerator
 import arcade
 
-
-WINDOW_WIDTH = 1280
-WINDOW_HEIGHT = 720
-WINDOW_TITLE = "Pac-Man"
-
-WALL_COLOR = arcade.color.BLUE
-PACGUM_COLOR = arcade.color.YELLOW
-SUPER_PACGUM_COLOR = arcade.color.WHITE
-
-WALL_WIDTH = 3
-
-ROWS = 30
-COLS = 30
-CELL_SIZE = 40
-MARGIN = 50
 
 WALL_TOP = 1      # bit 1
 WALL_RIGHT = 2    # bit 2
 WALL_BOTTOM = 4   # bit 4
 WALL_LEFT = 8     # bit 8
 
+WALL_COLOR = arcade.color.BLUE
+PACGUM_COLOR = arcade.color.YELLOW
+SUPER_PACGUM_COLOR = arcade.color.WHITE
 
-class MenuView(arcade.View):
-    """Menu of the game, press enter to start to play"""
-
-    def __init__(self, config):
-        super().__init__()
-        self.config = config
-
-    def on_show_view(self):
-        self.window.background_color = arcade.color.BLACK
-
-    def on_draw(self):
-        self.clear()
-        cx = self.window.width / 2
-        cy = self.window.height / 2
-
-        arcade.draw_text("PAC-MAN", cx, cy + 60,
-                         arcade.color.YELLOW, 64, anchor_x="center", bold=True)
-        arcade.draw_text("Push SPACE to play",
-                         cx, cy - 20,
-                         arcade.color.WHITE, 20, anchor_x="center")
-
-    def on_key_press(self, key, modifiers):
-        if key == arcade.key.SPACE:
-            generator = MazeGenerator(
-                size=(self.config.width, self.config.height),
-                perfect=False,
-                seed=self.config.seed,
-            )
-            game = GameView(self.config.width,
-                            self.config.height,
-                            level_index=0)
-            game.setup(generator)
-            self.window.show_view(game)
-        elif key == arcade.key.F:
-            self.window.set_fullscreen(not self.window.fullscreen)
-        elif key == arcade.key.ESCAPE:
-            self.window.close()
+WALL_WIDTH = 3
+MARGIN = 50
 
 
 class GameView(arcade.View):
     """View that draws the maze."""
 
     def __init__(self, maze_cols, maze_rows, level_index):
-        """Store the maze size. La fenêtre existe déjà, on ne la recrée pas."""
+        """Store the maze size and the positions of the pacgums."""
         super().__init__()
         self.maze_cols = maze_cols
         self.maze_rows = maze_rows
@@ -79,7 +32,7 @@ class GameView(arcade.View):
         self.window.background_color = arcade.csscolor.BLACK
 
     def setup(self, generator: MazeGenerator):
-        """Build the maze and place a dot in every cell."""
+        """Build the maze and place a pacgum in every cell."""
         self.maze = generator.maze
 
         self.super_pacgums = {
@@ -117,7 +70,7 @@ class GameView(arcade.View):
         return cx, cy
 
     def on_draw(self):
-        """Draw the walls and the dots on the screen."""
+        """Draw the walls and the pacgums on the screen."""
         self.clear()
 
         cell_size, offset_x, maze_top = self._grid_geometry()
@@ -155,6 +108,7 @@ class GameView(arcade.View):
 
     def on_key_press(self, key, modifiers):
         """Toggle fullscreen with F, go back to menu with Escape."""
+        from .menu_view import MenuView
         if key == arcade.key.F:
             self.window.set_fullscreen(not self.window.fullscreen)
         elif key == arcade.key.ESCAPE:
