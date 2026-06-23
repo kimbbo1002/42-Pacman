@@ -20,8 +20,9 @@ lint-strict:
 	mypy . --strict
 
 clean:
-	rm -rf 'find . -type d -name "__pycache__"'
+	find . -type d -name "__pycache__" -exec rm -rf {} +
 	rm -rf .mypy_cache
+	find . -name "*.pyc" -delete
 
 fclean: clean
 	rm -rf uv.lock
