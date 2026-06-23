@@ -19,16 +19,20 @@ MARGIN = 50
 class GameView(arcade.View):
     """View that draws the maze."""
 
-    def __init__(self, maze_cols: int, maze_rows: int, level_index: int):
+    def __init__(self, config: Config, level_index: int, score: int):
         """Store the maze size and the positions of the pacgums."""
         super().__init__()
-        self.maze_cols = maze_cols
-        self.maze_rows = maze_rows
+        self.points_per_pacgum = config.points_per_pacgum
+        self.points_per_super_pacgum = config.points_per_super_pacgum
+        self.points_per_ghost = config.points_per_ghost
+        self.cols = config.width
+        self.rows = config.height
         self.pacgums = set()
         self.super_pacgums = set()
         self.level_index = level_index
         self.pattern_42 = []
-        self.pacman_pos = [maze_cols // 2, maze_rows // 2]
+        self.pacman_pos = [self.cols // 2, self.rows // 2]
+        self.score = score
 
     def on_show_view(self):
         self.window.background_color = arcade.csscolor.BLACK
@@ -44,14 +48,14 @@ class GameView(arcade.View):
 
         self.super_pacgums = {
             (0, 0),
-            (0, self.maze_cols - 1),
-            (self.maze_rows - 1, 0),
-            (self.maze_rows - 1, self.maze_cols - 1),
+            (0, self.cols - 1),
+            (self.rows - 1, 0),
+            (self.rows - 1, self.cols - 1),
         }
         self.pacgums = {
             (row, col)
-            for row in range(self.maze_rows)
-            for col in range(self.maze_cols)
+            for row in range(self.rows)
+            for col in range(self.cols)
             if (row, col) not in self.super_pacgums
             and (row, col) not in self.pattern_42
             and (row, col) != self.pacman_pos
@@ -62,11 +66,11 @@ class GameView(arcade.View):
         w = self.window.width
         h = self.window.height
         cell_size = min(
-            (w - 2 * MARGIN) // self.maze_cols,
-            (h - 2 * MARGIN) // self.maze_rows,
+            (w - 2 * MARGIN) // self.cols,
+            (h - 2 * MARGIN) // self.rows,
         )
-        maze_w = self.maze_cols * cell_size
-        maze_h = self.maze_rows * cell_size
+        maze_w = self.cols * cell_size
+        maze_h = self.rows * cell_size
         offset_x = (w - maze_w) / 2
         offset_y = (h - maze_h) / 2
         maze_top = offset_y + maze_h
@@ -81,12 +85,13 @@ class GameView(arcade.View):
 
     def on_draw(self):
         """Draw the walls and the pacgums on the screen."""
+        # mettre a jour l'affichage des pacgums
         self.clear()
 
         cell_size, offset_x, maze_top = self._grid_geometry()
 
-        for row in range(self.maze_rows):
-            for col in range(self.maze_cols):
+        for row in range(self.rows):
+            for col in range(self.cols):
                 cell = self.maze[row][col]
                 left = offset_x + col * cell_size
                 right = left + cell_size
@@ -129,8 +134,8 @@ class GameView(arcade.View):
             self.window.set_fullscreen(not self.window.fullscreen)
         elif key == arcade.key.ESCAPE:
             self.window.show_view(MenuView(Config(
-                width=self.maze_cols,
-                height=self.maze_rows,
+                width=self.cols,
+                height=self.rows,
                 seed=42,
             )))
         # controls of the player
@@ -146,3 +151,19 @@ class GameView(arcade.View):
         elif key == arcade.key.RIGHT:
             if not (self.maze[x_pacman][y_pacman] & WALL_RIGHT):
                 self.pacman_pos[1] += 1
+
+        # After each movement, the score is recalculate
+        self.actualize_score()
+
+    def actualize_score(self):
+        """ Check if the player is on a cell with a pacgum or a super_pacgum,
+            remove it and increase the score."""
+        pos = tuple(self.pacman_pos)
+        if pos in self.pacgums:
+            self.score += self.points_per_pacgum
+            self.pacgums.remove(pos)
+
+        elif pos in self.super_pacgums:
+            self.score += self.points_per_super_pacgum
+            self.super_pacgums.remove(pos)
+            # AJOUTER LE FAIT DE POUVOIR MANGER LES GHOSTS

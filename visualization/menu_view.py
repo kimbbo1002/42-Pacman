@@ -35,9 +35,9 @@ class MenuView(arcade.View):
                 perfect=False,
                 seed=self.config.seed,
             )
-            game = GameView(self.config.width,
-                            self.config.height,
-                            level_index=0)
+            game = GameView(self.config,
+                            level_index=0,
+                            score=0)
             game.setup(generator)
             self.window.show_view(game)
         elif key == arcade.key.F:
