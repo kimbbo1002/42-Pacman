@@ -6,7 +6,7 @@ import arcade
 WALL_TOP = 1      # bit 1
 WALL_RIGHT = 2    # bit 2
 WALL_BOTTOM = 4   # bit 4
-WALL_LEFT = 8     # bit 8
+WALL_LEFT = 8     # bit 8   si bin = 15 : 42
 
 WALL_COLOR = arcade.color.BLUE
 PACGUM_COLOR = arcade.color.YELLOW
@@ -19,7 +19,7 @@ MARGIN = 50
 class GameView(arcade.View):
     """View that draws the maze."""
 
-    def __init__(self, maze_cols, maze_rows, level_index):
+    def __init__(self, maze_cols: int, maze_rows: int, level_index: int):
         """Store the maze size and the positions of the pacgums."""
         super().__init__()
         self.maze_cols = maze_cols
@@ -27,6 +27,7 @@ class GameView(arcade.View):
         self.pacgums = set()
         self.super_pacgums = set()
         self.level_index = level_index
+        self.pattern_42 = []
 
     def on_show_view(self):
         self.window.background_color = arcade.csscolor.BLACK
@@ -34,6 +35,11 @@ class GameView(arcade.View):
     def setup(self, generator: MazeGenerator):
         """Build the maze and place a pacgum in every cell."""
         self.maze = generator.maze
+        # check for the 42 cells patern
+        for x, line in enumerate(self.maze):
+            for y, col in enumerate(line):
+                if col == 15:
+                    self.pattern_42.append((x, y))
 
         self.super_pacgums = {
             (0, 0),
@@ -46,6 +52,7 @@ class GameView(arcade.View):
             for row in range(self.maze_rows)
             for col in range(self.maze_cols)
             if (row, col) not in self.super_pacgums
+            and (row, col) not in self.pattern_42
         }
 
     def _grid_geometry(self):
@@ -63,7 +70,8 @@ class GameView(arcade.View):
         maze_top = offset_y + maze_h
         return cell_size, offset_x, maze_top
 
-    def cell_center(self, row, col, cell_size, offset_x, maze_top):
+    def cell_center(self, row: int, col: int, cell_size: int,
+                    offset_x: int, maze_top: int):
         """Return the screen point at the middle of a cell."""
         cx = offset_x + col * cell_size + cell_size / 2
         cy = maze_top - row * cell_size - cell_size / 2
@@ -106,7 +114,7 @@ class GameView(arcade.View):
             cx, cy = self.cell_center(row, col, cell_size, offset_x, maze_top)
             arcade.draw_circle_filled(cx, cy, power_radius, SUPER_PACGUM_COLOR)
 
-    def on_key_press(self, key, modifiers):
+    def on_key_press(self, key: arcade.key, modifiers):
         """Toggle fullscreen with F, go back to menu with Escape."""
         from .menu_view import MenuView
         if key == arcade.key.F:
