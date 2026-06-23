@@ -85,7 +85,6 @@ class GameView(arcade.View):
 
     def on_draw(self):
         """Draw the walls and the pacgums on the screen."""
-        # mettre a jour l'affichage des pacgums
         self.clear()
 
         cell_size, offset_x, maze_top = self._grid_geometry()
@@ -121,7 +120,7 @@ class GameView(arcade.View):
             cx, cy = self.cell_center(row, col, cell_size, offset_x, maze_top)
             arcade.draw_circle_filled(cx, cy, power_radius, SUPER_PACGUM_COLOR)
 
-        # player
+        # player display
         cx, cy = self.cell_center(self.pacman_pos[0], self.pacman_pos[1],
                                   cell_size, offset_x, maze_top)
         arcade.draw_circle_filled(cx, cy, power_radius, arcade.color.VIOLET)
