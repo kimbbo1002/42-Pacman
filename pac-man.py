@@ -1,6 +1,10 @@
 from parsing import load_config
-from visualization import MenuView, WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE
+from visualization import MenuView
 import arcade
+
+WINDOW_WIDTH = 1280
+WINDOW_HEIGHT = 720
+WINDOW_TITLE = "Pac-Man"
 
 
 def main() -> None:

@@ -1,1 +1,1 @@
-from .visualizer import MenuView, WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE # NOQA 401
+from .menu_view import MenuView  # NOQA 401
