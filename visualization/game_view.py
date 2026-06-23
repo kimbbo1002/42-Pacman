@@ -1,42 +1,46 @@
-from mazegenerator import MazeGenerator
 from parsing import Config
+from mazegenerator import MazeGenerator
 import arcade
 
-
-WINDOW_WIDTH = 1280
-WINDOW_HEIGHT = 720
-WINDOW_TITLE = "Pac-Man"
-
-WALL_COLOR = arcade.color.BLUE
-WALL_WIDTH = 3
-
-ROWS = 30
-COLS = 30
-CELL_SIZE = 40
-MARGIN = 50
 
 WALL_TOP = 1      # bit 1
 WALL_RIGHT = 2    # bit 2
 WALL_BOTTOM = 4   # bit 4
 WALL_LEFT = 8     # bit 8
 
+WALL_COLOR = arcade.color.BLUE
+PACGUM_COLOR = arcade.color.YELLOW
+SUPER_PACGUM_COLOR = arcade.color.WHITE
 
-class GameView(arcade.Window):
-    """Window that draws the maze."""
+WALL_WIDTH = 3
+MARGIN = 50
 
-    def __init__(self, maze_cols, maze_rows):
-        """Create the window and store the maze size."""
-        super().__init__(WINDOW_WIDTH, WINDOW_HEIGHT,
-                         WINDOW_TITLE, fullscreen=True)
+
+class GameView(arcade.View):
+    """View that draws the maze."""
+
+    def __init__(self, maze_cols: int, maze_rows: int, level_index: int):
+        """Store the maze size and the positions of the pacgums."""
+        super().__init__()
         self.maze_cols = maze_cols
         self.maze_rows = maze_rows
-        self.background_color = arcade.csscolor.BLACK
         self.pacgums = set()
         self.super_pacgums = set()
+        self.level_index = level_index
+        self.pattern_42 = []
+        self.pacman_pos = [maze_cols // 2, maze_rows // 2]
+
+    def on_show_view(self):
+        self.window.background_color = arcade.csscolor.BLACK
 
     def setup(self, generator: MazeGenerator):
-        """Build the maze and place a dot in every cell."""
+        """Build the maze and place a pacgum in every cell."""
         self.maze = generator.maze
+        # check for the 42 cells patern
+        for x, line in enumerate(self.maze):
+            for y, col in enumerate(line):
+                if col == 15:
+                    self.pattern_42.append((x, y))
 
         self.super_pacgums = {
             (0, 0),
@@ -49,29 +53,34 @@ class GameView(arcade.Window):
             for row in range(self.maze_rows)
             for col in range(self.maze_cols)
             if (row, col) not in self.super_pacgums
+            and (row, col) not in self.pattern_42
+            and (row, col) != self.pacman_pos
         }
 
     def _grid_geometry(self):
         """Return the cell size and where to start drawing the maze."""
+        w = self.window.width
+        h = self.window.height
         cell_size = min(
-            (self.width - 2 * MARGIN) // self.maze_cols,
-            (self.height - 2 * MARGIN) // self.maze_rows,
+            (w - 2 * MARGIN) // self.maze_cols,
+            (h - 2 * MARGIN) // self.maze_rows,
         )
         maze_w = self.maze_cols * cell_size
         maze_h = self.maze_rows * cell_size
-        offset_x = (self.width - maze_w) / 2
-        offset_y = (self.height - maze_h) / 2
+        offset_x = (w - maze_w) / 2
+        offset_y = (h - maze_h) / 2
         maze_top = offset_y + maze_h
         return cell_size, offset_x, maze_top
 
-    def cell_center(self, row, col, cell_size, offset_x, maze_top):
+    def cell_center(self, row: int, col: int, cell_size: int,
+                    offset_x: int, maze_top: int):
         """Return the screen point at the middle of a cell."""
         cx = offset_x + col * cell_size + cell_size / 2
         cy = maze_top - row * cell_size - cell_size / 2
         return cx, cy
 
     def on_draw(self):
-        """Draw the walls and the dots on the screen."""
+        """Draw the walls and the pacgums on the screen."""
         self.clear()
 
         cell_size, offset_x, maze_top = self._grid_geometry()
@@ -97,42 +106,43 @@ class GameView(arcade.Window):
                     arcade.draw_line(right, bottom, right, top,
                                      WALL_COLOR, WALL_WIDTH)
 
-        PACGUM_COLOR = arcade.color.YELLOW
         radius = max(2, cell_size // 10)
         for (row, col) in self.pacgums:
             cx, cy = self.cell_center(row, col, cell_size, offset_x, maze_top)
             arcade.draw_circle_filled(cx, cy, radius, PACGUM_COLOR)
 
-        SUPER_PACGUM_COLOR = arcade.color.WHITE
         power_radius = max(5, cell_size // 4)
         for (row, col) in self.super_pacgums:
             cx, cy = self.cell_center(row, col, cell_size, offset_x, maze_top)
             arcade.draw_circle_filled(cx, cy, power_radius, SUPER_PACGUM_COLOR)
 
-    def on_key_press(self, key, modifiers):
-        """Toggle fullscreen with F and quit with Escape."""
+        # player
+        cx, cy = self.cell_center(self.pacman_pos[0], self.pacman_pos[1],
+                                  cell_size, offset_x, maze_top)
+        arcade.draw_circle_filled(cx, cy, power_radius, arcade.color.VIOLET)
+
+    def on_key_press(self, key: arcade.key, modifiers):
+        """Toggle fullscreen with F, go back to menu with Escape."""
+        from .menu_view import MenuView
+        x_pacman, y_pacman = self.pacman_pos[0], self.pacman_pos[1]
         if key == arcade.key.F:
-            self.set_fullscreen(not self.fullscreen)
+            self.window.set_fullscreen(not self.window.fullscreen)
         elif key == arcade.key.ESCAPE:
-            self.close()
-
-
-def setup_vizualisation(config: Config):
-    """Build a maze from the config and open the game window."""
-    generator = MazeGenerator(
-        size=(config.width, config.height),
-        perfect=False,
-        seed=config.seed
-        )
-    window = GameView(config.width, config.height)
-    window.setup(generator)
-    arcade.run()
-
-
-if __name__ == "__main__":
-    config = Config(
-                    width=15,
-                    height=15,
-                    seed=42,
-                    )
-    setup_vizualisation(config)
+            self.window.show_view(MenuView(Config(
+                width=self.maze_cols,
+                height=self.maze_rows,
+                seed=42,
+            )))
+        # controls of the player
+        elif key == arcade.key.UP:
+            if not (self.maze[x_pacman][y_pacman] & WALL_TOP):
+                self.pacman_pos[0] -= 1
+        elif key == arcade.key.DOWN:
+            if not (self.maze[x_pacman][y_pacman] & WALL_BOTTOM):
+                self.pacman_pos[0] += 1
+        elif key == arcade.key.LEFT:
+            if not (self.maze[x_pacman][y_pacman] & WALL_LEFT):
+                self.pacman_pos[1] -= 1
+        elif key == arcade.key.RIGHT:
+            if not (self.maze[x_pacman][y_pacman] & WALL_RIGHT):
+                self.pacman_pos[1] += 1
