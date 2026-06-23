@@ -6,7 +6,7 @@ import arcade
 WALL_TOP = 1      # bit 1
 WALL_RIGHT = 2    # bit 2
 WALL_BOTTOM = 4   # bit 4
-WALL_LEFT = 8     # bit 8   si bin = 15 : 42
+WALL_LEFT = 8     # bit 8
 
 WALL_COLOR = arcade.color.BLUE
 PACGUM_COLOR = arcade.color.YELLOW
@@ -28,6 +28,7 @@ class GameView(arcade.View):
         self.super_pacgums = set()
         self.level_index = level_index
         self.pattern_42 = []
+        self.pacman_pos = [maze_cols // 2, maze_rows // 2]
 
     def on_show_view(self):
         self.window.background_color = arcade.csscolor.BLACK
@@ -53,6 +54,7 @@ class GameView(arcade.View):
             for col in range(self.maze_cols)
             if (row, col) not in self.super_pacgums
             and (row, col) not in self.pattern_42
+            and (row, col) != self.pacman_pos
         }
 
     def _grid_geometry(self):
@@ -114,9 +116,15 @@ class GameView(arcade.View):
             cx, cy = self.cell_center(row, col, cell_size, offset_x, maze_top)
             arcade.draw_circle_filled(cx, cy, power_radius, SUPER_PACGUM_COLOR)
 
+        # player
+        cx, cy = self.cell_center(self.pacman_pos[0], self.pacman_pos[1],
+                                  cell_size, offset_x, maze_top)
+        arcade.draw_circle_filled(cx, cy, power_radius, arcade.color.VIOLET)
+
     def on_key_press(self, key: arcade.key, modifiers):
         """Toggle fullscreen with F, go back to menu with Escape."""
         from .menu_view import MenuView
+        x_pacman, y_pacman = self.pacman_pos[0], self.pacman_pos[1]
         if key == arcade.key.F:
             self.window.set_fullscreen(not self.window.fullscreen)
         elif key == arcade.key.ESCAPE:
@@ -125,3 +133,16 @@ class GameView(arcade.View):
                 height=self.maze_rows,
                 seed=42,
             )))
+        # controls of the player
+        elif key == arcade.key.UP:
+            if not (self.maze[x_pacman][y_pacman] & WALL_TOP):
+                self.pacman_pos[0] -= 1
+        elif key == arcade.key.DOWN:
+            if not (self.maze[x_pacman][y_pacman] & WALL_BOTTOM):
+                self.pacman_pos[0] += 1
+        elif key == arcade.key.LEFT:
+            if not (self.maze[x_pacman][y_pacman] & WALL_LEFT):
+                self.pacman_pos[1] -= 1
+        elif key == arcade.key.RIGHT:
+            if not (self.maze[x_pacman][y_pacman] & WALL_RIGHT):
+                self.pacman_pos[1] += 1
