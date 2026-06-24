@@ -77,7 +77,7 @@ class GameView(arcade.View):
         return cell_size, offset_x, maze_top
 
     def cell_center(self, row: int, col: int, cell_size: int,
-                    offset_x: int, maze_top: int):
+                    offset_x: float, maze_top: float):
         """Return the screen point at the middle of a cell."""
         cx = offset_x + col * cell_size + cell_size / 2
         cy = maze_top - row * cell_size - cell_size / 2
@@ -125,7 +125,7 @@ class GameView(arcade.View):
                                   cell_size, offset_x, maze_top)
         arcade.draw_circle_filled(cx, cy, power_radius, arcade.color.VIOLET)
 
-    def on_key_press(self, key: arcade.key, modifiers):
+    def on_key_press(self, key: int, modifiers):
         """Toggle fullscreen with F, go back to menu with Escape."""
         from .menu_view import MenuView
         x_pacman, y_pacman = self.pacman_pos[0], self.pacman_pos[1]
@@ -151,13 +151,13 @@ class GameView(arcade.View):
             if not (self.maze[x_pacman][y_pacman] & WALL_RIGHT):
                 self.pacman_pos[1] += 1
 
-        # After each movement, the score is recalculate
+        # After each movement, the score is recalculated
         self.actualize_score()
 
     def actualize_score(self):
         """ Check if the player is on a cell with a pacgum or a super_pacgum,
             remove it and increase the score."""
-        pos = tuple(self.pacman_pos)
+        pos = (self.pacman_pos[0], self.pacman_pos[1])
         if pos in self.pacgums:
             self.score += self.points_per_pacgum
             self.pacgums.remove(pos)
