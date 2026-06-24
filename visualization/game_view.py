@@ -58,7 +58,7 @@ class GameView(arcade.View):
             for col in range(self.cols)
             if (row, col) not in self.super_pacgums
             and (row, col) not in self.pattern_42
-            and (row, col) != self.pacman_pos
+            and (row, col) != tuple(self.pacman_pos)
         }
 
     def _grid_geometry(self):
