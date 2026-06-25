@@ -1,7 +1,7 @@
 from parsing import Config
 from mazegenerator import MazeGenerator
 import arcade
-from objects import Maze, Cell, Player
+from objects import Maze, Cell, Player, move_ghosts
 
 
 WALL_TOP = 1      # bit 1
@@ -28,6 +28,8 @@ class GameView(arcade.View):
         self.rows = config.height
         self.level_index = level_index
         self.score = score
+        self.time_passed = 0
+        self.ghost_speed = 0.3
 
     def on_show_view(self):
         self.window.background_color = arcade.csscolor.BLACK
@@ -95,10 +97,10 @@ class GameView(arcade.View):
                                      WALL_COLOR, WALL_WIDTH)
 
                 # display pacgums & super_pacgums
-                if cell.pacgum is True:
-                    arcade.draw_circle_filled(cx, cy, radius, PACGUM_COLOR)
                 if cell.super_pacgum is True:
                     arcade.draw_circle_filled(cx, cy, s_radius, SUPER_PACGUM_COLOR)
+                if cell.pacgum is True:
+                    arcade.draw_circle_filled(cx, cy, radius, PACGUM_COLOR)
 
                 # display player
                 if cell.player is True:
@@ -126,4 +128,11 @@ class GameView(arcade.View):
             self.player.move_player(-1, 0)
         elif key == arcade.key.RIGHT:
             self.player.move_player(1, 0)
+    
+    def on_update(self, delta_time: float):
+        if self.time_passed < self.ghost_speed:
+            self.time_passed += delta_time
+        else:
+            move_ghosts(self.player, self.maze.ghosts)
+            self.time_passed = 0
 
