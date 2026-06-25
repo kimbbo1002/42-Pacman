@@ -29,7 +29,7 @@ class GameView(arcade.View):
         self.level_index = level_index
         self.score = score
         self.time_passed = 0
-        self.ghost_speed = 0.3
+        self.ghost_speed = 0.5
 
     def on_show_view(self):
         self.window.background_color = arcade.csscolor.BLACK
