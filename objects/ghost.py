@@ -35,12 +35,12 @@ class Ghost:
 
         cell = self.maze[self.y][self.x]
         # top
-        if dy == 1 and dx == 0:
+        if dy == -1 and dx == 0:
             if cell.cell_wall & WALL_TOP:
                 return False
 
         # bottom
-        elif dy == -1 and dx == 0:
+        elif dy == 1 and dx == 0:
             if cell.cell_wall & WALL_BOTTOM:
                 return False
 
@@ -63,10 +63,10 @@ class Ghost:
             (self.x + 1, self.y),
             (self.x - 1, self.y)
         ]
-        available_neighbors: set[Cell] = set()
+        available_neighbors: List[Cell] = []
         for x, y in directions:
             if self.is_available(x, y):
-                available_neighbors.add(self.maze[y][x])
+                available_neighbors.append(self.maze[y][x])
 
         next_cell = random.choice(available_neighbors)
         if next_cell:
@@ -140,8 +140,10 @@ class Ghost:
 
 def move_ghosts(player: Player, ghosts: List[Ghost]) -> None:
     Ghost.calculate_closest(player, ghosts)
+    #for g in ghosts:
+    #    if g.is_closest is False:
+    #        g.random_move()
+    #    else:
+    #        g.chase_move(player)
     for g in ghosts:
-        if g.is_closest is False:
-            g.random_move()
-        else:
-            g.chase_move(player)
+        g.random_move()
