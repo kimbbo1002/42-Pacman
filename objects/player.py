@@ -49,12 +49,12 @@ class Player:
 
     def monitor_score(self) -> None:
         cell = self.maze.maze[self.y][self.x]
-        if cell.pacgum is True:
-            self.score += cell.point
-            cell.pacgum = False
-        elif cell.super_pacgum is True:
+        if  cell.super_pacgum is True:
             self.score += cell.point
             cell.super_pacgum = False
+        elif cell.pacgum is True:
+            self.score += cell.point
+            cell.pacgum = False
         
         # add to count ghosts (depending on mode)
 

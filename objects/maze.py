@@ -12,7 +12,7 @@ class Cell:
         self.player = False
         self.ghost = False
         self.pattern_42 = True if cell_wall == 15 else False
-        self.pacgum = True if not self.pattern_42 else False
+        self.pacgum = False
         self.point = 0
 
 
@@ -70,7 +70,7 @@ class Maze:
         for y in range(len(self.maze[0])):
             for x in range(len(self.maze)):
                 cell = self.maze[y][x]
-                if not cell.ghost and not cell.super_pacgum and not cell.player and not cell.pattern_42:
+                if not cell.super_pacgum and not cell.player and not cell.pattern_42:
                     cell.pacgum = True
                     cell.point = self.config.points_per_pacgum
 
