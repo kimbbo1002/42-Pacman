@@ -1,6 +1,8 @@
 from parsing import Config
 from mazegenerator import MazeGenerator
 import arcade
+from objects import Maze, move_ghosts
+import time
 
 
 WALL_TOP = 1      # bit 1
@@ -15,6 +17,9 @@ SUPER_PACGUM_COLOR = arcade.color.WHITE
 WALL_WIDTH = 3
 MARGIN = 50
 
+RESPAWN_PLAYER_DELAY = 3.0
+SUPER_MODE_DELAY = 8.0
+
 
 class GameView(arcade.View):
     """View that draws the maze."""
@@ -22,44 +27,20 @@ class GameView(arcade.View):
     def __init__(self, config: Config, level_index: int, score: int):
         """Store the maze size and the positions of the pacgums."""
         super().__init__()
-        self.points_per_pacgum = config.points_per_pacgum
-        self.points_per_super_pacgum = config.points_per_super_pacgum
-        self.points_per_ghost = config.points_per_ghost
+        self.config = config
         self.cols = config.width
         self.rows = config.height
-        self.pacgums = set()
-        self.super_pacgums = set()
         self.level_index = level_index
-        self.pattern_42 = []
-        self.pacman_pos = [self.cols // 2, self.rows // 2]
         self.score = score
-
-    def on_show_view(self):
-        self.window.background_color = arcade.csscolor.BLACK
+        self.time_passed = 0
+        self.ghost_speed = 0.5
 
     def setup(self, generator: MazeGenerator):
         """Build the maze and place a pacgum in every cell."""
-        self.maze = generator.maze
-        # check for the 42 cells patern
-        for x, line in enumerate(self.maze):
-            for y, col in enumerate(line):
-                if col == 15:
-                    self.pattern_42.append((x, y))
-
-        self.super_pacgums = {
-            (0, 0),
-            (0, self.cols - 1),
-            (self.rows - 1, 0),
-            (self.rows - 1, self.cols - 1),
-        }
-        self.pacgums = {
-            (row, col)
-            for row in range(self.rows)
-            for col in range(self.cols)
-            if (row, col) not in self.super_pacgums
-            and (row, col) not in self.pattern_42
-            and (row, col) != tuple(self.pacman_pos)
-        }
+        maze = generator.maze
+        self.maze = Maze(maze, self.config)
+        self.maze.place_objects()
+        self.player = self.maze.player
 
     def _grid_geometry(self):
         """Return the cell size and where to start drawing the maze."""
@@ -88,47 +69,52 @@ class GameView(arcade.View):
         self.clear()
 
         cell_size, offset_x, maze_top = self._grid_geometry()
+        radius = max(2, cell_size // 10)
+        s_radius = max(5, cell_size // 4)
 
-        for row in range(self.rows):
-            for col in range(self.cols):
-                cell = self.maze[row][col]
-                left = offset_x + col * cell_size
+        for r in range(self.rows):
+            for c in range(self.cols):
+                cell = self.maze.maze[r][c]
+
+                left = offset_x + c * cell_size
                 right = left + cell_size
-                top = maze_top - row * cell_size
+                top = maze_top - r * cell_size
                 bottom = top - cell_size
 
-                if cell & WALL_TOP:
+                cx, cy = self.cell_center(r, c, cell_size, offset_x, maze_top)
+
+                # display walls
+                if cell.cell_wall & WALL_TOP:
                     arcade.draw_line(left, top, right, top,
                                      WALL_COLOR, WALL_WIDTH)
-                if cell & WALL_BOTTOM:
+                if cell.cell_wall & WALL_BOTTOM:
                     arcade.draw_line(left, bottom, right, bottom,
                                      WALL_COLOR, WALL_WIDTH)
-                if cell & WALL_LEFT:
+                if cell.cell_wall & WALL_LEFT:
                     arcade.draw_line(left, bottom, left, top,
                                      WALL_COLOR, WALL_WIDTH)
-                if cell & WALL_RIGHT:
+                if cell.cell_wall & WALL_RIGHT:
                     arcade.draw_line(right, bottom, right, top,
                                      WALL_COLOR, WALL_WIDTH)
 
-        radius = max(2, cell_size // 10)
-        for (row, col) in self.pacgums:
-            cx, cy = self.cell_center(row, col, cell_size, offset_x, maze_top)
-            arcade.draw_circle_filled(cx, cy, radius, PACGUM_COLOR)
+                # display pacgums & super_pacgums
+                if cell.super_pacgum is True:
+                    arcade.draw_circle_filled(cx, cy, s_radius,
+                                              SUPER_PACGUM_COLOR)
+                if cell.pacgum is True:
+                    arcade.draw_circle_filled(cx, cy, radius, PACGUM_COLOR)
 
-        power_radius = max(5, cell_size // 4)
-        for (row, col) in self.super_pacgums:
-            cx, cy = self.cell_center(row, col, cell_size, offset_x, maze_top)
-            arcade.draw_circle_filled(cx, cy, power_radius, SUPER_PACGUM_COLOR)
-
-        # player display
-        cx, cy = self.cell_center(self.pacman_pos[0], self.pacman_pos[1],
-                                  cell_size, offset_x, maze_top)
-        arcade.draw_circle_filled(cx, cy, power_radius, arcade.color.VIOLET)
+                # display player
+                if cell.player is True:
+                    arcade.draw_circle_filled(cx, cy, s_radius,
+                                              arcade.color.VIOLET)
+                if cell.ghost is True:
+                    arcade.draw_circle_filled(cx, cy, s_radius,
+                                              arcade.color.CARMINE_RED)
 
     def on_key_press(self, key: int, modifiers):
         """Toggle fullscreen with F, go back to menu with Escape."""
         from .menu_view import MenuView
-        x_pacman, y_pacman = self.pacman_pos[0], self.pacman_pos[1]
         if key == arcade.key.F:
             self.window.set_fullscreen(not self.window.fullscreen)
         elif key == arcade.key.ESCAPE:
@@ -137,32 +123,37 @@ class GameView(arcade.View):
                 height=self.rows,
                 seed=42,
             )))
+
         # controls of the player
         elif key == arcade.key.UP:
-            if not (self.maze[x_pacman][y_pacman] & WALL_TOP):
-                self.pacman_pos[0] -= 1
+            self.player.move_player(0, -1)
         elif key == arcade.key.DOWN:
-            if not (self.maze[x_pacman][y_pacman] & WALL_BOTTOM):
-                self.pacman_pos[0] += 1
+            self.player.move_player(0, 1)
         elif key == arcade.key.LEFT:
-            if not (self.maze[x_pacman][y_pacman] & WALL_LEFT):
-                self.pacman_pos[1] -= 1
+            self.player.move_player(-1, 0)
         elif key == arcade.key.RIGHT:
-            if not (self.maze[x_pacman][y_pacman] & WALL_RIGHT):
-                self.pacman_pos[1] += 1
+            self.player.move_player(1, 0)
 
-        # After each movement, the score is recalculated
-        self.actualize_score()
+    def on_update(self, delta_time: float):
+        """Run one game step: end super_mode when it times out, respawn the
+            player after its delay, set the background, and move the ghosts
+            at their own speed."""
+        now = time.time()
 
-    def actualize_score(self):
-        """ Check if the player is on a cell with a pacgum or a super_pacgum,
-            remove it and increase the score."""
-        pos = (self.pacman_pos[0], self.pacman_pos[1])
-        if pos in self.pacgums:
-            self.score += self.points_per_pacgum
-            self.pacgums.remove(pos)
+        if now - self.player.super_mode_start > SUPER_MODE_DELAY:
+            self.player.super_mode = False
 
-        elif pos in self.super_pacgums:
-            self.score += self.points_per_super_pacgum
-            self.super_pacgums.remove(pos)
-            # AJOUTER LE FAIT DE POUVOIR MANGER LES GHOSTS
+        if (self.player.dead and now - self.player.dead_since
+                > RESPAWN_PLAYER_DELAY):
+            self.player.respawn()
+
+        if self.player.super_mode:
+            arcade.set_background_color(arcade.color.DARK_SCARLET)
+        else:
+            arcade.set_background_color(arcade.color.BLACK)
+
+        if self.time_passed < self.ghost_speed:
+            self.time_passed += delta_time
+        else:
+            move_ghosts(self.player, self.maze.ghosts)
+            self.time_passed = 0
