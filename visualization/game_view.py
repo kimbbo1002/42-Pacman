@@ -1,7 +1,8 @@
 from parsing import Config
 from mazegenerator import MazeGenerator
 import arcade
-from objects import Maze, Cell, Player, move_ghosts
+from objects import Maze, move_ghosts
+import time
 
 
 WALL_TOP = 1      # bit 1
@@ -15,6 +16,9 @@ SUPER_PACGUM_COLOR = arcade.color.WHITE
 
 WALL_WIDTH = 3
 MARGIN = 50
+
+RESPAWN_PLAYER_DELAY = 3.0
+SUPER_MODE_DELAY = 8.0
 
 
 class GameView(arcade.View):
@@ -30,9 +34,6 @@ class GameView(arcade.View):
         self.score = score
         self.time_passed = 0
         self.ghost_speed = 0.5
-
-    def on_show_view(self):
-        self.window.background_color = arcade.csscolor.BLACK
 
     def setup(self, generator: MazeGenerator):
         """Build the maze and place a pacgum in every cell."""
@@ -98,15 +99,18 @@ class GameView(arcade.View):
 
                 # display pacgums & super_pacgums
                 if cell.super_pacgum is True:
-                    arcade.draw_circle_filled(cx, cy, s_radius, SUPER_PACGUM_COLOR)
+                    arcade.draw_circle_filled(cx, cy, s_radius,
+                                              SUPER_PACGUM_COLOR)
                 if cell.pacgum is True:
                     arcade.draw_circle_filled(cx, cy, radius, PACGUM_COLOR)
 
                 # display player
                 if cell.player is True:
-                    arcade.draw_circle_filled(cx, cy, s_radius, arcade.color.VIOLET)
+                    arcade.draw_circle_filled(cx, cy, s_radius,
+                                              arcade.color.VIOLET)
                 if cell.ghost is True:
-                    arcade.draw_circle_filled(cx, cy, s_radius, arcade.color.CARMINE_RED)
+                    arcade.draw_circle_filled(cx, cy, s_radius,
+                                              arcade.color.CARMINE_RED)
 
     def on_key_press(self, key: int, modifiers):
         """Toggle fullscreen with F, go back to menu with Escape."""
@@ -119,6 +123,7 @@ class GameView(arcade.View):
                 height=self.rows,
                 seed=42,
             )))
+
         # controls of the player
         elif key == arcade.key.UP:
             self.player.move_player(0, -1)
@@ -128,11 +133,27 @@ class GameView(arcade.View):
             self.player.move_player(-1, 0)
         elif key == arcade.key.RIGHT:
             self.player.move_player(1, 0)
-    
+
     def on_update(self, delta_time: float):
+        """Run one game step: end super_mode when it times out, respawn the
+            player after its delay, set the background, and move the ghosts
+            at their own speed."""
+        now = time.time()
+
+        if now - self.player.super_mode_start > SUPER_MODE_DELAY:
+            self.player.super_mode = False
+
+        if (self.player.dead and now - self.player.dead_since
+                > RESPAWN_PLAYER_DELAY):
+            self.player.respawn()
+
+        if self.player.super_mode:
+            arcade.set_background_color(arcade.color.DARK_SCARLET)
+        else:
+            arcade.set_background_color(arcade.color.BLACK)
+
         if self.time_passed < self.ghost_speed:
             self.time_passed += delta_time
         else:
             move_ghosts(self.player, self.maze.ghosts)
             self.time_passed = 0
-

@@ -3,8 +3,9 @@ import math
 import numpy as np
 from collections import deque
 from .player import Player
-from .maze import Maze, Cell
-from typing import List, Any, Dict
+from .maze import Cell
+from typing import List
+import time
 
 
 WALL_TOP = 1      # bit 1
@@ -12,18 +13,45 @@ WALL_RIGHT = 2    # bit 2
 WALL_BOTTOM = 4   # bit 4
 WALL_LEFT = 8     # bit 8
 
+RESPAWN_DELAY = 5.0  # seconds before an eaten ghost reappears at its spawn
+
 
 class Ghost:
-    def __init__(self, id: int, x: int, y: int, maze: List[List[Cell]]) -> None:
+    """An enemy that moves through the maze to catch the player."""
+
+    def __init__(self, id: int, x: int, y: int, maze: List[List[Cell]]
+                 ) -> None:
+        """Create a ghost at (x, y) and remember it as its spawn."""
         self.id = id
         self.x = x
         self.y = y
+        self.spawn_x = x
+        self.spawn_y = y
+        self.history = deque(maxlen=3)
         self.point = 0
         self.is_closest = False
         self.dead = False
+        self.dead_since = 0.0
         self.maze = maze
 
+    def die(self) -> None:
+        """Despawn the ghost: clear its cell and start the respawn timer."""
+        self.dead = True
+        self.dead_since = time.time()
+        self.is_closest = False
+        self.maze[self.y][self.x].ghost = False
+
+    def respawn(self) -> None:
+        """Bring the ghost back to its starting position."""
+        self.dead = False
+        self.x = self.spawn_x
+        self.y = self.spawn_y
+        self.history.clear()
+        self.maze[self.y][self.x].ghost = True
+
     def is_available(self, x2: int, y2: int) -> bool:
+        """Tell if the ghost can step to (x2, y2): no wall, no edge,
+        no other ghost."""
         if x2 < 0 or x2 >= len(self.maze) or y2 < 0 or y2 >= len(self.maze[0]):
             return False
         next_cell = self.maze[y2][x2]
@@ -57,6 +85,7 @@ class Ghost:
         return True
 
     def random_move(self) -> None:
+        """Move to a random free neighbour, avoiding the last cells."""
         directions = [
             (self.x, self.y + 1),
             (self.x, self.y - 1),
@@ -64,33 +93,48 @@ class Ghost:
             (self.x - 1, self.y)
         ]
         available_neighbors: List[Cell] = []
-        for x, y in directions:
-            if self.is_available(x, y):
-                available_neighbors.append(self.maze[y][x])
+        for next_x, next_y in directions:
+            if self.is_available(next_x, next_y):
+                if (next_x, next_y) in self.history:
+                    continue
+                available_neighbors.append(self.maze[next_y][next_x])
+
+        if not available_neighbors:
+            for dx, dy in directions:
+                if self.is_available(dx, dy):
+                    available_neighbors.append(self.maze[dy][dx])
+        if not available_neighbors:
+            available_neighbors.append(self.maze[self.y][self.x])
 
         next_cell = random.choice(available_neighbors)
         if next_cell:
+            self.history.append((self.x, self.y))
             self.maze[self.y][self.x].ghost = False
             self.x = next_cell.x
             self.y = next_cell.y
             next_cell.ghost = True
 
     def find_shortest_move(self, player: Player) -> Cell:
+        """Return the next cell on the shortest path to the player (BFS)."""
         start_x, start_y = self.x, self.y
         target = (player.x, player.y)
 
-        queue = deque([(start_x, start_y)])
-        path = {self.maze[self.y][self.x]: None}
+        start_cell = self.maze[start_y][start_x]
+        target_cell = self.maze[player.y][player.x]
 
-        start_cell = self.maze[start_x][start_y]
-        target_cell = self.maze[player.x][player.y]
+        # Already on the player's cell: nothing to path-find.
+        if (start_x, start_y) == target:
+            return start_cell
+
+        queue = deque([(start_x, start_y)])
+        path = {start_cell: None}
 
         directions = [(0, 1), (0, -1), (-1, 0), (1, 0)]
         found = False
 
         while queue:
             curr_x, curr_y = queue.popleft()
-            curr_cell = self.maze[curr_x][curr_y]
+            curr_cell = self.maze[curr_y][curr_x]
 
             if (curr_x, curr_y) == target:
                 found = True
@@ -99,8 +143,9 @@ class Ghost:
             for dx, dy in directions:
                 next_x, next_y = curr_x + dx, curr_y + dy
 
-                if 0 <= next_x < len(self.maze) and 0 <= next_y < len(self.maze[0]):
-                    neighbor_cell = self.maze[next_x][next_y]
+                if 0 <= next_x < len(self.maze[0]) and 0 <= next_y < len(
+                        self.maze):
+                    neighbor_cell = self.maze[next_y][next_x]
 
                     if neighbor_cell not in path:
                         self.x, self.y = curr_x, curr_y
@@ -120,6 +165,7 @@ class Ghost:
         return curr
 
     def chase_move(self, player: Player) -> None:
+        """Take one step toward the player."""
         next_cell = self.find_shortest_move(player)
         self.maze[self.y][self.x].ghost = False
         self.x = next_cell.x
@@ -128,22 +174,76 @@ class Ghost:
 
     @staticmethod
     def calculate_closest(player: Player, ghosts: List["Ghost"]) -> None:
+        """Flag the living ghost nearest to the player as is_closest."""
+        for g in ghosts:
+            g.is_closest = False
+
+        alive = [g for g in ghosts if not g.dead]
+        if not alive:
+            return
+
         dists = []
-        for g in ghosts:
-            dist = math.sqrt(math.pow(g.x - player.x, 2) + math.pow(g.y - player.y, 2))
+        for g in alive:
+            dist = math.sqrt(math.pow(g.x - player.x, 2) + math.pow(
+                    g.y - player.y, 2))
             dists.append(dist)
-        min = np.argmin(dists)
-        for g in ghosts:
-            if g.id == min:
-                g.is_closest = True
+        closest = alive[int(np.argmin(dists))]
+        closest.is_closest = True
+
+    def get_farthest_cell_from_player(self, player: Player) -> Cell:
+        """Return the free neighbour cell that is farthest from the player."""
+        available_neighbors = []
+        directions = [(0, -1), (-1, 0), (1, 0), (0, 1)]
+        distances = {}
+
+        for dx, dy in directions:
+            next_x = self.x + dx
+            next_y = self.y + dy
+            if self.is_available(next_x, next_y):
+                if (next_x, next_y) in self.history:
+                    continue
+                available_neighbors.append(self.maze[next_y][next_x])
+
+        if not available_neighbors:
+            for dx, dy in directions:
+                if self.is_available(self.x + dx, self.y + dy):
+                    return self.maze[self.y + dy][self.x + dx]
+            return self.maze[self.y][self.x]
+
+        for cell in available_neighbors:
+            distance = abs(cell.x - player.x) + abs(cell.y - player.y)
+            distances[cell] = distance
+
+        return max(distances, key=distances.get)
+
+    def escape_move(self, player: Player) -> None:
+        """Take one step away from the player (used in super_mode)."""
+        next_cell = self.get_farthest_cell_from_player(player)
+        self.history.append((self.x, self.y))
+        self.maze[self.y][self.x].ghost = False
+        self.x = next_cell.x
+        self.y = next_cell.y
+        next_cell.ghost = True
 
 
 def move_ghosts(player: Player, ghosts: List[Ghost]) -> None:
-    Ghost.calculate_closest(player, ghosts)
-    #for g in ghosts:
-    #    if g.is_closest is False:
-    #        g.random_move()
-    #    else:
-    #        g.chase_move(player)
+    """Move every ghost once: respawn the dead ones, then chase, flee or
+    wander depending on the player's state, and check for a collision."""
+    now = time.time()
     for g in ghosts:
-        g.random_move()
+        if g.dead and now - g.dead_since >= RESPAWN_DELAY:
+            g.respawn()
+
+    if not player.dead:
+        Ghost.calculate_closest(player, ghosts)
+    for g in ghosts:
+        if g.dead:
+            continue
+        if player.super_mode:
+            g.escape_move(player)
+        elif g.is_closest is False or player.dead:
+            g.random_move()
+        else:
+            g.chase_move(player)
+
+    player.check_ghost_collision()
