@@ -80,6 +80,16 @@ class Config(BaseModel):
                     and not validated_val.endswith('.json')
                 ):
                     raise ValueError("must be a valid JSON file name")
+                if (
+                    field_name == 'level'
+                    and validated_val > 20
+                ):
+                    raise ValueError("maximum level of game is 20")
+                if (
+                    field_name == 'lives'
+                    and validated_val > 10
+                ):
+                    raise ValueError("maximum lives of player is 10")
 
                 clean_data[field_name] = validated_val
 
@@ -91,6 +101,12 @@ class Config(BaseModel):
                 clean_data[field_name] = default_value
 
         return clean_data
+
+    @model_validator(mode='after')
+    def validate_points(self) -> Dict[str, Any]:
+        try:
+            try:
+                # validate o
 
 
 def load_config() -> Config:
