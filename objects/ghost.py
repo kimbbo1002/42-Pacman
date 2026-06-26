@@ -82,15 +82,15 @@ class Ghost:
         queue = deque([(start_x, start_y)])
         path = {self.maze[self.y][self.x]: None}
 
-        start_cell = self.maze[start_x][start_y]
-        target_cell = self.maze[player.x][player.y]
+        start_cell = self.maze[start_y][start_x]
+        target_cell = self.maze[player.y][player.x]
 
         directions = [(0, 1), (0, -1), (-1, 0), (1, 0)]
         found = False
 
         while queue:
             curr_x, curr_y = queue.popleft()
-            curr_cell = self.maze[curr_x][curr_y]
+            curr_cell = self.maze[curr_y][curr_x]
 
             if (curr_x, curr_y) == target:
                 found = True
@@ -100,7 +100,7 @@ class Ghost:
                 next_x, next_y = curr_x + dx, curr_y + dy
 
                 if 0 <= next_x < len(self.maze) and 0 <= next_y < len(self.maze[0]):
-                    neighbor_cell = self.maze[next_x][next_y]
+                    neighbor_cell = self.maze[next_y][next_x]
 
                     if neighbor_cell not in path:
                         self.x, self.y = curr_x, curr_y
@@ -140,10 +140,8 @@ class Ghost:
 
 def move_ghosts(player: Player, ghosts: List[Ghost]) -> None:
     Ghost.calculate_closest(player, ghosts)
-    #for g in ghosts:
-    #    if g.is_closest is False:
-    #        g.random_move()
-    #    else:
-    #        g.chase_move(player)
     for g in ghosts:
-        g.random_move()
+        if g.is_closest is False:
+            g.random_move()
+        else:
+            g.chase_move(player)
