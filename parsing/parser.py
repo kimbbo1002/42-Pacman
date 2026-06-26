@@ -6,6 +6,8 @@ from enum import Enum
 
 
 class Colors(Enum):
+    """ANSI color codes used to print warnings in the terminal."""
+
     RED = "\033[0;31m"
     YELLOW = "\033[1;33m"
     GREEN = "\033[0;32m"
@@ -25,6 +27,8 @@ def log_warning(field_name: str, message: str, default: Any):
 
 
 class Config(BaseModel):
+    """Game settings read from the config file, with safe defaults."""
+
     highscore_filename: str = Field(default="highscore.json")
     level: int = Field(default=10)
     width: int = Field(default=15)
