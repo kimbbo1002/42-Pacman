@@ -27,6 +27,8 @@ class Maze:
         self.config = config
         self.cols = config.width
         self.rows = config.height
+        self.pacgums = 0
+        self.end_of_game = False
 
         # initialize maze
         for y, line in enumerate(maze):
@@ -60,6 +62,7 @@ class Maze:
             cell = self.maze[y][x]
             cell.super_pacgum = True
             cell.point = self.config.points_per_super_pacgum
+            self.pacgums += 1
 
         self.ghosts: List[Ghost] = []
         for i, (x, y) in enumerate(ghost_coordinates):
@@ -81,3 +84,8 @@ class Maze:
                         and not cell.pattern_42):
                     cell.pacgum = True
                     cell.point = self.config.points_per_pacgum
+                    self.pacgums += 1
+
+    def check_pacgums_left(self) -> None:
+        if self.pacgums == 0:
+            self.end_of_game = True

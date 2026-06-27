@@ -17,7 +17,8 @@ SUPER_PACGUM_COLOR = arcade.color.WHITE
 WALL_WIDTH = 3
 MARGIN = 50
 
-RESPAWN_PLAYER_DELAY = 3.0
+RESPAWN_PLAYER_DELAY = 0.0
+RESPAWN_PLAYER_DURATION = 3.0
 SUPER_MODE_DELAY = 8.0
 
 
@@ -104,13 +105,19 @@ class GameView(arcade.View):
                 if cell.pacgum is True:
                     arcade.draw_circle_filled(cx, cy, radius, PACGUM_COLOR)
 
-                # display player
-                if cell.player is True:
-                    arcade.draw_circle_filled(cx, cy, s_radius,
-                                              arcade.color.VIOLET)
+                # display ghost
                 if cell.ghost is True:
                     arcade.draw_circle_filled(cx, cy, s_radius,
                                               arcade.color.CARMINE_RED)
+                
+                # display player
+                if cell.player is True:
+                    if self.player.respawning is False:
+                        arcade.draw_circle_filled(cx, cy, s_radius,
+                                                  arcade.color.VIOLET)
+                    else:
+                        arcade.draw_circle_filled(cx, cy, s_radius,
+                                                  arcade.color.CYAN)
 
     def on_key_press(self, key: int, modifiers):
         """Toggle fullscreen with F, go back to menu with Escape."""
@@ -157,3 +164,9 @@ class GameView(arcade.View):
         else:
             move_ghosts(self.player, self.maze.ghosts)
             self.time_passed = 0
+
+        if now - self.player.respawning_start > RESPAWN_PLAYER_DURATION:
+            self.player.respawning = False
+        
+        if self.maze.end_of_game is True:
+            self.window.close()
