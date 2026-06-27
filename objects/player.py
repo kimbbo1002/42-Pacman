@@ -110,7 +110,7 @@ class Player:
                 self.score += g.point
                 g.die()
             else:
-                if self.respawning is False:
+                if self.respawning is False and self.cheat_mode is False:
                     self.die()
                     self.lives -= 1
                     break

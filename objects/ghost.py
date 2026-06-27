@@ -230,20 +230,21 @@ def move_ghosts(player: Player, ghosts: List[Ghost]) -> None:
     """Move every ghost once: respawn the dead ones, then chase, flee or
     wander depending on the player's state, and check for a collision."""
     now = time.time()
-    for g in ghosts:
-        if g.dead and now - g.dead_since >= RESPAWN_DELAY:
-            g.respawn()
+    if player.maze.ghost_freeze is False:
+        for g in ghosts:
+            if g.dead and now - g.dead_since >= RESPAWN_DELAY:
+                g.respawn()
 
-    if not player.dead:
-        Ghost.calculate_closest(player, ghosts)
-    for g in ghosts:
-        if g.dead:
-            continue
-        if player.super_mode:
-            g.escape_move(player)
-        elif g.is_closest is False or player.dead:
-            g.random_move()
-        else:
-            g.chase_move(player)
+        if not player.dead:
+            Ghost.calculate_closest(player, ghosts)
+        for g in ghosts:
+            if g.dead:
+                continue
+            if player.super_mode:
+                g.escape_move(player)
+            elif g.is_closest is False or player.dead:
+                g.random_move()
+            else:
+                g.chase_move(player)
 
     player.check_ghost_collision()

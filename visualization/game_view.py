@@ -140,6 +140,17 @@ class GameView(arcade.View):
             self.player.move_player(-1, 0)
         elif key == arcade.key.RIGHT:
             self.player.move_player(1, 0)
+        
+        elif key == arcade.key.C:
+            if self.player.cheat_mode is False:
+                self.player.cheat_mode = True
+            else:
+                self.player.cheat_mode = False
+        elif key == arcade.key.G and self.player.cheat_mode is True:
+            if self.maze.ghost_freeze is True:
+                self.maze.ghost_freeze = False
+            else:
+                self.maze.ghost_freeze = True
 
     def on_update(self, delta_time: float):
         """Run one game step: end super_mode when it times out, respawn the

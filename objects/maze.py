@@ -29,6 +29,8 @@ class Maze:
         self.rows = config.height
         self.pacgums = 0
         self.end_of_game = False
+        self.cheat_mode = False
+        self.ghost_freeze = False
 
         # initialize maze
         for y, line in enumerate(maze):
