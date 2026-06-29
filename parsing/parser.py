@@ -39,6 +39,7 @@ class Config(BaseModel):
     points_per_ghost: int = Field(default=200)
     seed: int = Field(default=42)
     level_max_time: int = Field(default=90)
+    theme: str = Field(default="pacman")
 
     @model_validator(mode='before')
     @classmethod
@@ -49,6 +50,7 @@ class Config(BaseModel):
             return data
 
         clean_data = {}
+        themes = ["pacman", "stardew_valley", "minecraft"]
         for field_name, field_info in cls.model_fields.items():
             default_value = field_info.default
 
@@ -94,6 +96,11 @@ class Config(BaseModel):
                     and validated_val > 10
                 ):
                     raise ValueError("maximum lives of player is 10")
+                if (
+                    field_name == 'theme'
+                    and validated_val not in themes
+                ):
+                    raise ValueError(f"must be {', '.join(themes)}")
 
                 clean_data[field_name] = validated_val
 

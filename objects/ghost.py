@@ -16,11 +16,6 @@ WALL_LEFT = 8     # bit 8
 
 RESPAWN_DELAY = 5.0  # seconds before an eaten ghost reappears at its spawn
 
-GHOST_CREEPER = "resources/ghosts/ghost_creeper.png"
-GHOST_ENDERMAN = "resources/ghosts/ghost_enderman.png"
-GHOST_SKELETON = "resources/ghosts/ghost_skeleton.png"
-GHOST_ZOMBIE = "resources/ghosts/ghost_zombie.png"
-
 
 class Ghost:
     """An enemy that moves through the maze to catch the player."""
@@ -40,17 +35,11 @@ class Ghost:
         self.dead_since = 0.0
         self.maze = maze
 
-        # initialize textures
-        textures = [
-            GHOST_CREEPER,
-            GHOST_ENDERMAN,
-            GHOST_SKELETON,
-            GHOST_ZOMBIE,
-        ]
-
-        texture = arcade.load_texture(textures[self.id])
+        # initialize texture, themed from the config
+        texture = arcade.load_texture(
+            self.maze.assets.texture("ghosts", f"ghost_{self.id}"))
         self.sprite = arcade.BasicSprite(texture, scale=0.6)
-        self.maze.sprites.append(self.sprite)
+        self.maze.character_sprites.append(self.sprite)
 
     def die(self) -> None:
         """Despawn the ghost: clear its cell and start the respawn timer."""
