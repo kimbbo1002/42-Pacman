@@ -10,6 +10,7 @@ WINDOW_TITLE = "Pac-Man"
 def main() -> None:
     try:
         config = load_config()
+        print(config)
         window = arcade.Window(WINDOW_WIDTH, WINDOW_HEIGHT,
                                WINDOW_TITLE, fullscreen=True)
         window.show_view(MenuView(config))

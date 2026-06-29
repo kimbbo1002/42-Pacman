@@ -1,15 +1,14 @@
 from typing import List
 from parsing import Config
+from .assets import Assets
 import arcade
 
 
-PACGUM_TEXTURE = "resources/pacgums/pacgum_diamond.png"
-SUPER_PACGUM_TEXTURE = "resources/pacgums/pacgum_endereye.png"
-
-
-def load_pacgum_textures() -> List[arcade.BasicSprite]:
-    pacgum_texture = arcade.load_texture(PACGUM_TEXTURE)
-    super_pacgum_texture = arcade.load_texture(SUPER_PACGUM_TEXTURE)
+def load_pacgum_textures(assets: Assets) -> List[arcade.BasicSprite]:
+    pacgum_texture = arcade.load_texture(
+        assets.texture("pacgums", "pacgum"))
+    super_pacgum_texture = arcade.load_texture(
+        assets.texture("pacgums", "super_pacgum"))
     sprite_pacgum = arcade.BasicSprite(pacgum_texture, scale=0.2)
     sprite_super_pacgum = arcade.BasicSprite(super_pacgum_texture, scale=0.6)
 
@@ -20,8 +19,11 @@ class Cell:
     """One square of the maze: its walls and what sits on it."""
 
     def __init__(
-            self, x: int, y: int,
-            cell_wall: int
+            self,
+            x: int,
+            y: int,
+            cell_wall: int,
+            assets: Assets
     ) -> None:
         """Initialize each cell of maze."""
         self.x = x
@@ -33,7 +35,8 @@ class Cell:
         self.pattern_42 = True if cell_wall == 15 else False
         self.pacgum = False
         self.point = 0
-        self.sprite_pacgum, self.sprite_super_pacgum = load_pacgum_textures()
+        self.sprite_pacgum, self.sprite_super_pacgum = load_pacgum_textures(
+            assets)
 
 
 class Maze:
@@ -43,19 +46,22 @@ class Maze:
         """Initialize the maze, place pacgums & super_pacgums & player."""
         self.maze: List[List[Cell]] = []
         self.config = config
+        self.assets = Assets(config.theme)
         self.cols = config.width
         self.rows = config.height
         self.pacgums = 0
         self.end_of_game = False
         self.cheat_mode = False
         self.ghost_freeze = False
+        # pacgums in the back layer, characters (ghosts + player) on top
         self.sprites = arcade.SpriteList()
+        self.character_sprites = arcade.SpriteList()
 
         # initialize maze
         for y, line in enumerate(maze):
             line_list = []
             for x, col in enumerate(line):
-                cell = Cell(x, y, col)
+                cell = Cell(x, y, col, self.assets)
                 line_list.append(cell)
             self.maze.append(line_list)
 

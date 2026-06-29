@@ -8,10 +8,6 @@ WALL_RIGHT = 2    # bit 2
 WALL_BOTTOM = 4   # bit 4
 WALL_LEFT = 8     # bit 8
 
-PLAYER_STEVE = "resources/player/player_steve.png"
-PLAYER_TECHNOBLADE = "resources/player/player_technoblade.png"
-PLAYER_HEROBRINE = "resources/player/player_herobrine.png"
-
 
 class Player:
     """The character moved by the user: eats pacgums and ghosts."""
@@ -33,18 +29,22 @@ class Player:
         self.super_mode_start = 0
         self.cheat_mode = False
 
-        # initialize sprites for player
-        normal_texture = arcade.load_texture(PLAYER_STEVE)
-        super_texture = arcade.load_texture(PLAYER_TECHNOBLADE)
-        cheat_texture = arcade.load_texture(PLAYER_HEROBRINE)
+        # initialize sprites for player, themed from the config
+        assets = self.maze.assets
+        normal_texture = arcade.load_texture(
+            assets.texture("player", "normal"))
+        super_texture = arcade.load_texture(
+            assets.texture("player", "super"))
+        cheat_texture = arcade.load_texture(
+            assets.texture("player", "cheat"))
         self.sprite_normal = arcade.BasicSprite(normal_texture, scale=0.6, visible=False)
         self.sprite_super = arcade.BasicSprite(super_texture, scale=0.6, visible=False)
         self.sprite_cheat = arcade.BasicSprite(cheat_texture, scale=0.6, visible=False)
 
-        # append sprites to SpriteList
-        self.maze.sprites.append(self.sprite_normal)
-        self.maze.sprites.append(self.sprite_super)
-        self.maze.sprites.append(self.sprite_cheat)
+        # append sprites to the character layer (drawn on top of pacgums)
+        self.maze.character_sprites.append(self.sprite_normal)
+        self.maze.character_sprites.append(self.sprite_super)
+        self.maze.character_sprites.append(self.sprite_cheat)
 
     def die(self):
         """Kill the player: lose one life and clear its cell."""

@@ -10,10 +10,6 @@ WALL_RIGHT = 2    # bit 2
 WALL_BOTTOM = 4   # bit 4
 WALL_LEFT = 8     # bit 8
 
-WALL_COLOR = arcade.color.BLUE
-PACGUM_COLOR = arcade.color.YELLOW
-SUPER_PACGUM_COLOR = arcade.color.WHITE
-
 WALL_WIDTH = 3
 MARGIN = 50
 
@@ -87,16 +83,16 @@ class GameView(arcade.View):
                 # display walls
                 if cell.cell_wall & WALL_TOP:
                     arcade.draw_line(left, top, right, top,
-                                     WALL_COLOR, WALL_WIDTH)
+                                     self.maze.assets.wall, WALL_WIDTH)
                 if cell.cell_wall & WALL_BOTTOM:
                     arcade.draw_line(left, bottom, right, bottom,
-                                     WALL_COLOR, WALL_WIDTH)
+                                     self.maze.assets.wall, WALL_WIDTH)
                 if cell.cell_wall & WALL_LEFT:
                     arcade.draw_line(left, bottom, left, top,
-                                     WALL_COLOR, WALL_WIDTH)
+                                     self.maze.assets.wall, WALL_WIDTH)
                 if cell.cell_wall & WALL_RIGHT:
                     arcade.draw_line(right, bottom, right, top,
-                                     WALL_COLOR, WALL_WIDTH)
+                                     self.maze.assets.wall, WALL_WIDTH)
 
                 # display pacgums & super_pacgums
                 cell.sprite_pacgum.center_x = cx
@@ -112,6 +108,7 @@ class GameView(arcade.View):
                 else:
                     cell.sprite_pacgum.visible = False
         self.maze.sprites.draw()
+        self.maze.character_sprites.draw()
 
     def on_key_press(self, key: int, modifiers):
         """Toggle fullscreen with F, go back to menu with Escape."""
@@ -160,9 +157,9 @@ class GameView(arcade.View):
             self.player.respawn()
 
         if self.player.super_mode:
-            arcade.set_background_color(arcade.color.DARK_SCARLET)
+            arcade.set_background_color(self.maze.assets.super_background)
         else:
-            arcade.set_background_color(arcade.color.BLACK)
+            arcade.set_background_color(self.maze.assets.background)
 
         if self.time_passed < self.ghost_speed:
             self.time_passed += delta_time
