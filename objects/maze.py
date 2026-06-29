@@ -1,11 +1,28 @@
 from typing import List
 from parsing import Config
+import arcade
+
+
+PACGUM_TEXTURE = "resources/pacgums/pacgum_diamond.png"
+SUPER_PACGUM_TEXTURE = "resources/pacgums/pacgum_endereye.png"
+
+
+def load_pacgum_textures() -> List[arcade.BasicSprite]:
+    pacgum_texture = arcade.load_texture(PACGUM_TEXTURE)
+    super_pacgum_texture = arcade.load_texture(SUPER_PACGUM_TEXTURE)
+    sprite_pacgum = arcade.BasicSprite(pacgum_texture, scale=0.2)
+    sprite_super_pacgum = arcade.BasicSprite(super_pacgum_texture, scale=0.6)
+
+    return [sprite_pacgum, sprite_super_pacgum]
 
 
 class Cell:
     """One square of the maze: its walls and what sits on it."""
 
-    def __init__(self, x: int, y: int, cell_wall: int) -> None:
+    def __init__(
+            self, x: int, y: int,
+            cell_wall: int
+    ) -> None:
         """Initialize each cell of maze."""
         self.x = x
         self.y = y
@@ -16,6 +33,7 @@ class Cell:
         self.pattern_42 = True if cell_wall == 15 else False
         self.pacgum = False
         self.point = 0
+        self.sprite_pacgum, self.sprite_super_pacgum = load_pacgum_textures()
 
 
 class Maze:
@@ -31,6 +49,7 @@ class Maze:
         self.end_of_game = False
         self.cheat_mode = False
         self.ghost_freeze = False
+        self.sprites = arcade.SpriteList()
 
         # initialize maze
         for y, line in enumerate(maze):
@@ -65,10 +84,11 @@ class Maze:
             cell.super_pacgum = True
             cell.point = self.config.points_per_super_pacgum
             self.pacgums += 1
+            self.sprites.append(cell.sprite_super_pacgum)
 
         self.ghosts: List[Ghost] = []
         for i, (x, y) in enumerate(ghost_coordinates):
-            ghost = Ghost(i, x, y, self.maze)
+            ghost = Ghost(i, x, y, self)
             ghost.point = self.config.points_per_ghost
             self.ghosts.append(ghost)
             self.maze[y][x].ghost = True
@@ -87,6 +107,7 @@ class Maze:
                     cell.pacgum = True
                     cell.point = self.config.points_per_pacgum
                     self.pacgums += 1
+                    self.sprites.append(cell.sprite_pacgum)
 
     def check_pacgums_left(self) -> None:
         if self.pacgums == 0:
