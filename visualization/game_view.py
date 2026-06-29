@@ -17,7 +17,8 @@ SUPER_PACGUM_COLOR = arcade.color.WHITE
 WALL_WIDTH = 3
 MARGIN = 50
 
-RESPAWN_PLAYER_DELAY = 3.0
+RESPAWN_PLAYER_DELAY = 0.0
+RESPAWN_PLAYER_DURATION = 3.0
 SUPER_MODE_DELAY = 8.0
 
 
@@ -98,19 +99,19 @@ class GameView(arcade.View):
                                      WALL_COLOR, WALL_WIDTH)
 
                 # display pacgums & super_pacgums
+                cell.sprite_pacgum.center_x = cx
+                cell.sprite_pacgum.center_y = cy
+                cell.sprite_super_pacgum.center_x = cx
+                cell.sprite_super_pacgum.center_y = cy
                 if cell.super_pacgum is True:
-                    arcade.draw_circle_filled(cx, cy, s_radius,
-                                              SUPER_PACGUM_COLOR)
+                    cell.sprite_super_pacgum.visible = True
+                else:
+                    cell.sprite_super_pacgum.visible = False
                 if cell.pacgum is True:
-                    arcade.draw_circle_filled(cx, cy, radius, PACGUM_COLOR)
-
-                # display player
-                if cell.player is True:
-                    arcade.draw_circle_filled(cx, cy, s_radius,
-                                              arcade.color.VIOLET)
-                if cell.ghost is True:
-                    arcade.draw_circle_filled(cx, cy, s_radius,
-                                              arcade.color.CARMINE_RED)
+                    cell.sprite_pacgum.visible = True
+                else:
+                    cell.sprite_pacgum.visible = False
+        self.maze.sprites.draw()
 
     def on_key_press(self, key: int, modifiers):
         """Toggle fullscreen with F, go back to menu with Escape."""
@@ -133,6 +134,17 @@ class GameView(arcade.View):
             self.player.move_player(-1, 0)
         elif key == arcade.key.RIGHT:
             self.player.move_player(1, 0)
+        
+        elif key == arcade.key.C:
+            if self.player.cheat_mode is False:
+                self.player.cheat_mode = True
+            else:
+                self.player.cheat_mode = False
+        elif key == arcade.key.G and self.player.cheat_mode is True:
+            if self.maze.ghost_freeze is True:
+                self.maze.ghost_freeze = False
+            else:
+                self.maze.ghost_freeze = True
 
     def on_update(self, delta_time: float):
         """Run one game step: end super_mode when it times out, respawn the
@@ -157,3 +169,49 @@ class GameView(arcade.View):
         else:
             move_ghosts(self.player, self.maze.ghosts)
             self.time_passed = 0
+
+        if now - self.player.respawning_start > RESPAWN_PLAYER_DURATION:
+            self.player.respawning = False
+        
+        if self.maze.end_of_game is True:
+            self.window.close()
+        
+        # update coordinates for ghosts
+        cell_size, offset_x, maze_top = self._grid_geometry()
+        for g in self.maze.ghosts:
+            if g.dead is True:
+                g.sprite.visible = False
+                continue
+            else:
+                g.sprite.visible = True
+            cx, cy = self.cell_center(
+                g.y, g.x,
+                cell_size,
+                offset_x,
+                maze_top,
+            )
+            g.sprite.center_x = cx
+            g.sprite.center_y = cy
+
+        
+        # update coordinates for player
+        cx, cy = self.cell_center(
+            self.player.y, self.player.x,
+            cell_size, offset_x, maze_top
+        )
+        if self.player.super_mode:
+            active_sprite = self.player.sprite_super
+        elif self.player.cheat_mode:
+            active_sprite = self.player.sprite_cheat
+        else:
+            active_sprite = self.player.sprite_normal
+
+        # Hide every sprite
+        self.player.sprite_normal.visible = False
+        self.player.sprite_super.visible = False
+        self.player.sprite_cheat.visible = False
+
+        # Show the selected one
+        active_sprite.center_x = cx
+        active_sprite.center_y = cy
+        active_sprite.visible = True

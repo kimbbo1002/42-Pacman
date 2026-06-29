@@ -1,11 +1,16 @@
 from .maze import Maze
 import time
+import arcade
 
 
 WALL_TOP = 1      # bit 1
 WALL_RIGHT = 2    # bit 2
 WALL_BOTTOM = 4   # bit 4
 WALL_LEFT = 8     # bit 8
+
+PLAYER_STEVE = "resources/player/player_steve.png"
+PLAYER_TECHNOBLADE = "resources/player/player_technoblade.png"
+PLAYER_HEROBRINE = "resources/player/player_herobrine.png"
 
 
 class Player:
@@ -23,9 +28,23 @@ class Player:
         self.dead = False
         self.dead_since = 0.0
         self.respawning = False
+        self.respawning_start = 0
         self.super_mode = False
         self.super_mode_start = 0
         self.cheat_mode = False
+
+        # initialize sprites for player
+        normal_texture = arcade.load_texture(PLAYER_STEVE)
+        super_texture = arcade.load_texture(PLAYER_TECHNOBLADE)
+        cheat_texture = arcade.load_texture(PLAYER_HEROBRINE)
+        self.sprite_normal = arcade.BasicSprite(normal_texture, scale=0.6, visible=False)
+        self.sprite_super = arcade.BasicSprite(super_texture, scale=0.6, visible=False)
+        self.sprite_cheat = arcade.BasicSprite(cheat_texture, scale=0.6, visible=False)
+
+        # append sprites to SpriteList
+        self.maze.sprites.append(self.sprite_normal)
+        self.maze.sprites.append(self.sprite_super)
+        self.maze.sprites.append(self.sprite_cheat)
 
     def die(self):
         """Kill the player: lose one life and clear its cell."""
@@ -33,6 +52,8 @@ class Player:
         self.dead_since = time.time()
         self.lives -= 1
         self.maze.maze[self.y][self.x].player = False
+        if self.lives < 0:
+            self.maze.the_end = True
 
     def respawn(self):
         """Put the player back on its starting cell."""
@@ -41,6 +62,8 @@ class Player:
         self.y = self.spawn_y
         self.maze.maze[self.y][self.x].player = True
         self.dead = False
+        self.respawning_start = time.time()
+        self.respawning = True
 
     def is_available(self, dx: int, dy: int) -> bool:
         """Tell if the player can move by (dx, dy): no wall, no edge."""
@@ -81,6 +104,7 @@ class Player:
         if cell.super_pacgum is True:
             self.score += cell.point
             cell.super_pacgum = False
+            self.maze.pacgums -= 1
 
             # Start super mode
             self.super_mode_start = time.time()
@@ -89,6 +113,7 @@ class Player:
         elif cell.pacgum is True:
             self.score += cell.point
             cell.pacgum = False
+            self.maze.pacgums -= 1
 
     def check_ghost_collision(self) -> None:
         """Eat in super_mode, else die. Called after every movement
@@ -103,8 +128,14 @@ class Player:
                 self.score += g.point
                 g.die()
             else:
-                self.die()
-                break
+                if self.respawning is False and self.cheat_mode is False:
+                    self.die()
+                    self.lives -= 1
+                    break
+
+    def check_lives(self) -> None:
+        if self.lives < 0:
+            self.maze.end_of_game = True
 
     def move_player(self, dx: int, dy: int) -> None:
         """Move the player by (dx, dy), then check pacgums and ghosts."""
@@ -120,3 +151,5 @@ class Player:
 
         self.monitor_score()
         self.check_ghost_collision()
+        self.maze.check_pacgums_left()
+        self.check_lives()

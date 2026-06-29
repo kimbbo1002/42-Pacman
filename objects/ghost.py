@@ -6,6 +6,7 @@ from .player import Player
 from .maze import Cell
 from typing import List
 import time
+import arcade
 
 
 WALL_TOP = 1      # bit 1
@@ -14,6 +15,11 @@ WALL_BOTTOM = 4   # bit 4
 WALL_LEFT = 8     # bit 8
 
 RESPAWN_DELAY = 5.0  # seconds before an eaten ghost reappears at its spawn
+
+GHOST_CREEPER = "resources/ghosts/ghost_creeper.png"
+GHOST_ENDERMAN = "resources/ghosts/ghost_enderman.png"
+GHOST_SKELETON = "resources/ghosts/ghost_skeleton.png"
+GHOST_ZOMBIE = "resources/ghosts/ghost_zombie.png"
 
 
 class Ghost:
@@ -34,12 +40,24 @@ class Ghost:
         self.dead_since = 0.0
         self.maze = maze
 
+        # initialize textures
+        textures = [
+            GHOST_CREEPER,
+            GHOST_ENDERMAN,
+            GHOST_SKELETON,
+            GHOST_ZOMBIE,
+        ]
+
+        texture = arcade.load_texture(textures[self.id])
+        self.sprite = arcade.BasicSprite(texture, scale=0.6)
+        self.maze.sprites.append(self.sprite)
+
     def die(self) -> None:
         """Despawn the ghost: clear its cell and start the respawn timer."""
         self.dead = True
         self.dead_since = time.time()
         self.is_closest = False
-        self.maze[self.y][self.x].ghost = False
+        self.maze.maze[self.y][self.x].ghost = False
 
     def respawn(self) -> None:
         """Bring the ghost back to its starting position."""
@@ -47,21 +65,21 @@ class Ghost:
         self.x = self.spawn_x
         self.y = self.spawn_y
         self.history.clear()
-        self.maze[self.y][self.x].ghost = True
+        self.maze.maze[self.y][self.x].ghost = True
 
     def is_available(self, x2: int, y2: int) -> bool:
         """Tell if the ghost can step to (x2, y2): no wall, no edge,
         no other ghost."""
-        if x2 < 0 or x2 >= len(self.maze) or y2 < 0 or y2 >= len(self.maze[0]):
+        if x2 < 0 or x2 >= len(self.maze.maze) or y2 < 0 or y2 >= len(self.maze.maze[0]):
             return False
-        next_cell = self.maze[y2][x2]
+        next_cell = self.maze.maze[y2][x2]
         if next_cell.ghost is True:
             return False
 
         dx = x2 - self.x
         dy = y2 - self.y
 
-        cell = self.maze[self.y][self.x]
+        cell = self.maze.maze[self.y][self.x]
         # top
         if dy == -1 and dx == 0:
             if cell.cell_wall & WALL_TOP:
@@ -97,19 +115,19 @@ class Ghost:
             if self.is_available(next_x, next_y):
                 if (next_x, next_y) in self.history:
                     continue
-                available_neighbors.append(self.maze[next_y][next_x])
+                available_neighbors.append(self.maze.maze[next_y][next_x])
 
         if not available_neighbors:
             for dx, dy in directions:
                 if self.is_available(dx, dy):
-                    available_neighbors.append(self.maze[dy][dx])
+                    available_neighbors.append(self.maze.maze[dy][dx])
         if not available_neighbors:
-            available_neighbors.append(self.maze[self.y][self.x])
+            available_neighbors.append(self.maze.maze[self.y][self.x])
 
         next_cell = random.choice(available_neighbors)
         if next_cell:
             self.history.append((self.x, self.y))
-            self.maze[self.y][self.x].ghost = False
+            self.maze.maze[self.y][self.x].ghost = False
             self.x = next_cell.x
             self.y = next_cell.y
             next_cell.ghost = True
@@ -119,8 +137,8 @@ class Ghost:
         start_x, start_y = self.x, self.y
         target = (player.x, player.y)
 
-        start_cell = self.maze[start_y][start_x]
-        target_cell = self.maze[player.y][player.x]
+        start_cell = self.maze.maze[start_y][start_x]
+        target_cell = self.maze.maze[player.y][player.x]
 
         # Already on the player's cell: nothing to path-find.
         if (start_x, start_y) == target:
@@ -134,7 +152,7 @@ class Ghost:
 
         while queue:
             curr_x, curr_y = queue.popleft()
-            curr_cell = self.maze[curr_y][curr_x]
+            curr_cell = self.maze.maze[curr_y][curr_x]
 
             if (curr_x, curr_y) == target:
                 found = True
@@ -143,9 +161,9 @@ class Ghost:
             for dx, dy in directions:
                 next_x, next_y = curr_x + dx, curr_y + dy
 
-                if 0 <= next_x < len(self.maze[0]) and 0 <= next_y < len(
-                        self.maze):
-                    neighbor_cell = self.maze[next_y][next_x]
+                if 0 <= next_x < len(self.maze.maze[0]) and 0 <= next_y < len(
+                        self.maze.maze):
+                    neighbor_cell = self.maze.maze[next_y][next_x]
 
                     if neighbor_cell not in path:
                         self.x, self.y = curr_x, curr_y
@@ -167,7 +185,7 @@ class Ghost:
     def chase_move(self, player: Player) -> None:
         """Take one step toward the player."""
         next_cell = self.find_shortest_move(player)
-        self.maze[self.y][self.x].ghost = False
+        self.maze.maze[self.y][self.x].ghost = False
         self.x = next_cell.x
         self.y = next_cell.y
         next_cell.ghost = True
@@ -202,13 +220,13 @@ class Ghost:
             if self.is_available(next_x, next_y):
                 if (next_x, next_y) in self.history:
                     continue
-                available_neighbors.append(self.maze[next_y][next_x])
+                available_neighbors.append(self.maze.maze[next_y][next_x])
 
         if not available_neighbors:
             for dx, dy in directions:
                 if self.is_available(self.x + dx, self.y + dy):
-                    return self.maze[self.y + dy][self.x + dx]
-            return self.maze[self.y][self.x]
+                    return self.maze.maze[self.y + dy][self.x + dx]
+            return self.maze.maze[self.y][self.x]
 
         for cell in available_neighbors:
             distance = abs(cell.x - player.x) + abs(cell.y - player.y)
@@ -220,7 +238,7 @@ class Ghost:
         """Take one step away from the player (used in super_mode)."""
         next_cell = self.get_farthest_cell_from_player(player)
         self.history.append((self.x, self.y))
-        self.maze[self.y][self.x].ghost = False
+        self.maze.maze[self.y][self.x].ghost = False
         self.x = next_cell.x
         self.y = next_cell.y
         next_cell.ghost = True
@@ -230,20 +248,21 @@ def move_ghosts(player: Player, ghosts: List[Ghost]) -> None:
     """Move every ghost once: respawn the dead ones, then chase, flee or
     wander depending on the player's state, and check for a collision."""
     now = time.time()
-    for g in ghosts:
-        if g.dead and now - g.dead_since >= RESPAWN_DELAY:
-            g.respawn()
+    if player.maze.ghost_freeze is False:
+        for g in ghosts:
+            if g.dead and now - g.dead_since >= RESPAWN_DELAY:
+                g.respawn()
 
-    if not player.dead:
-        Ghost.calculate_closest(player, ghosts)
-    for g in ghosts:
-        if g.dead:
-            continue
-        if player.super_mode:
-            g.escape_move(player)
-        elif g.is_closest is False or player.dead:
-            g.random_move()
-        else:
-            g.chase_move(player)
+        if not player.dead:
+            Ghost.calculate_closest(player, ghosts)
+        for g in ghosts:
+            if g.dead:
+                continue
+            if player.super_mode:
+                g.escape_move(player)
+            elif g.is_closest is False or player.dead:
+                g.random_move()
+            else:
+                g.chase_move(player)
 
     player.check_ghost_collision()

@@ -17,7 +17,7 @@ class Colors(Enum):
         return self.value
 
 
-def log_warning(field_name: str, message: str, default: Any):
+def log_warning(field_name: str, message: str, default: Any) -> None:
     """Helper function to handle all repetitive warning logs."""
     print(
         f"\n{Colors.YELLOW}WARNING(CONFIG):\n{Colors.RESET}"
@@ -84,6 +84,16 @@ class Config(BaseModel):
                     and not validated_val.endswith('.json')
                 ):
                     raise ValueError("must be a valid JSON file name")
+                if (
+                    field_name == 'level'
+                    and validated_val > 20
+                ):
+                    raise ValueError("maximum level of game is 20")
+                if (
+                    field_name == 'lives'
+                    and validated_val > 10
+                ):
+                    raise ValueError("maximum lives of player is 10")
 
                 clean_data[field_name] = validated_val
 
@@ -95,6 +105,52 @@ class Config(BaseModel):
                 clean_data[field_name] = default_value
 
         return clean_data
+
+    @model_validator(mode='after')
+    def validate_points(self) -> Dict[str, Any]:
+        # check if points are in range
+        if (
+            not 0 < self.points_per_pacgum <= 250
+            or not 0 < self.points_per_super_pacgum <= 500
+            or not 0 < self.points_per_ghost <= 1000
+        ):
+            print(
+                f"\n{Colors.YELLOW}WARNING(CONFIG):\n{Colors.RESET}"
+                "Error parsing [points_per_pacgum, points_per_super_pacgum, "
+                "points_per_ghost]\n"
+                "\nAll points must respect ranges:\n"
+                "points_per_pacgum: 1-250\n"
+                "points_per_super_pacgum: 1-500\n"
+                "points_per_ghost: 1-1000"
+                "\n\n Returning to default values:"
+                "points_per_pacgum: 10\n"
+                "points_per_super_pacgum: 20\n"
+                "points_per_ghost: 200"
+            )
+            self.points_per_pacgum = 10
+            self.points_per_super_pacgum = 50
+            self.points_per_ghost = 200
+            return self
+        
+        # check if point hierarchy is correct
+        if (
+            not self.points_per_pacgum * 2 <= self.points_per_super_pacgum
+            or not self.points_per_super_pacgum * 2 <= self.points_per_ghost
+        ):
+            print(
+                f"\n{Colors.YELLOW}WARNING(CONFIG):\n{Colors.RESET}"
+                "Error parsing [points_per_pacgum, points_per_super_pacgum, "
+                "points_per_ghost]\n"
+                "\nAll points must respect hierarchy\n"
+                "points_per_pacgum * 2 <= points_per_super_pacgum * 2"
+                " <= points_per_ghost"
+            )
+            self.points_per_pacgum = 10
+            self.points_per_super_pacgum = 50
+            self.points_per_ghost = 200
+            return self
+        
+        return self
 
 
 def load_config() -> Config:
