@@ -59,7 +59,8 @@ class Ghost:
     def is_available(self, x2: int, y2: int) -> bool:
         """Tell if the ghost can step to (x2, y2): no wall, no edge,
         no other ghost."""
-        if x2 < 0 or x2 >= len(self.maze.maze) or y2 < 0 or y2 >= len(self.maze.maze[0]):
+        if (x2 < 0 or x2 >= len(self.maze.maze[0])
+                or y2 < 0 or y2 >= len(self.maze.maze)):
             return False
         next_cell = self.maze.maze[y2][x2]
         if next_cell.ghost is True:

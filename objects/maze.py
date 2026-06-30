@@ -67,6 +67,24 @@ class Maze:
                 line_list.append(cell)
             self.maze.append(line_list)
 
+    def find_player_spawn(self) -> tuple:
+        """Return the cell nearest the centre that the player can stand on,
+            avoiding the 42 patern."""
+        cx, cy = self.cols // 2, self.rows // 2
+        candidates = [
+            (x, y)
+            for y in range(self.rows)
+            for x in range(self.cols)
+        ]
+        candidates.sort(key=lambda p: abs(p[0] - cx) + abs(p[1] - cy))
+        for x, y in candidates:
+            cell = self.maze[y][x]
+            if not cell.pattern_42 and not cell.super_pacgum \
+                    and not cell.ghost:
+                return x, y
+        # fallback: should never happen on a valid maze
+        return cx, cy
+
     def place_objects(self) -> None:
         """Fill the maze: super pacgums in the corners, ghosts near them,
         the player in the middle, and a normal pacgum in every other cell."""
@@ -76,9 +94,9 @@ class Maze:
         # place super_pacgums & ghosts
         super_pacgum_coordinates = [
             (0, 0),
-            (0, self.cols - 1),
-            (self.rows - 1, 0),
-            (self.rows - 1, self.cols - 1)
+            (self.cols - 1, 0),
+            (0, self.rows - 1),
+            (self.cols - 1, self.rows - 1)
         ]
         ghost_coordinates = [
             (1, 0),
@@ -101,15 +119,14 @@ class Maze:
             self.ghosts.append(ghost)
             self.maze[y][x].ghost = True
 
-        # place player
-        self.player = Player(self.config, self.cols // 2,
-                             self.rows // 2, self.config.lives,
-                             self, self.score)
-        self.maze[self.rows // 2][self.cols // 2].player = True
+        spawn_x, spawn_y = self.find_player_spawn()
+        self.player = Player(self.config, spawn_x, spawn_y,
+                             self.config.lives, self, self.score)
+        self.maze[spawn_y][spawn_x].player = True
 
-        # place pacgums
-        for y in range(len(self.maze[0])):
-            for x in range(len(self.maze)):
+        # place pacgums (y over rows, x over columns)
+        for y in range(len(self.maze)):
+            for x in range(len(self.maze[0])):
                 cell = self.maze[y][x]
                 if (not cell.super_pacgum and not cell.player
                         and not cell.pattern_42):

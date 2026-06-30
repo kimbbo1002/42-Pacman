@@ -13,6 +13,13 @@ WALL_LEFT = 8     # bit 8
 WALL_WIDTH = 3
 MARGIN = 50
 
+# Fraction of a cell that each sprite should span (keeps images sized
+# relative to the maze whatever the window or grid dimensions are).
+PLAYER_CELL_FRACTION = 0.8
+GHOST_CELL_FRACTION = 0.8
+PACGUM_CELL_FRACTION = 0.22
+SUPER_PACGUM_CELL_FRACTION = 0.5
+
 RESPAWN_PLAYER_DELAY = 0.0
 RESPAWN_PLAYER_DURATION = 3.0
 SUPER_MODE_DELAY = 8.0
@@ -39,7 +46,7 @@ class GameView(arcade.View):
         self.maze.place_objects()
         self.player = self.maze.player
 
-    def _grid_geometry(self):
+    def grid_geometry(self):
         """Return the cell size and where to start drawing the maze."""
         w = self.window.width
         h = self.window.height
@@ -61,11 +68,19 @@ class GameView(arcade.View):
         cy = maze_top - row * cell_size - cell_size / 2
         return cx, cy
 
+    @staticmethod
+    def fit_to_cell(sprite: arcade.BasicSprite, cell_size: int,
+                    fraction: float) -> None:
+        """Scale a sprite so its largest side spans `fraction` of a cell,
+        keeping the texture aspect ratio (independent of its native size)."""
+        native = max(sprite.texture.width, sprite.texture.height)
+        sprite.scale = (cell_size * fraction) / native
+
     def on_draw(self):
         """Draw the walls and the pacgums on the screen."""
         self.clear()
 
-        cell_size, offset_x, maze_top = self._grid_geometry()
+        cell_size, offset_x, maze_top = self.grid_geometry()
         radius = max(2, cell_size // 10)
         s_radius = max(5, cell_size // 4)
 
@@ -94,7 +109,11 @@ class GameView(arcade.View):
                     arcade.draw_line(right, bottom, right, top,
                                      self.maze.assets.wall, WALL_WIDTH)
 
-                # display pacgums & super_pacgums
+                # display pacgums & super_pacgums (sized to the cell)
+                self.fit_to_cell(cell.sprite_pacgum, cell_size,
+                                 PACGUM_CELL_FRACTION)
+                self.fit_to_cell(cell.sprite_super_pacgum, cell_size,
+                                 SUPER_PACGUM_CELL_FRACTION)
                 cell.sprite_pacgum.center_x = cx
                 cell.sprite_pacgum.center_y = cy
                 cell.sprite_super_pacgum.center_x = cx
@@ -145,7 +164,7 @@ class GameView(arcade.View):
 
         # pass the level (DEBUG)
         elif key == arcade.key.P:
-            if self.level == 10:
+            if self.level == self.config.level:
                 from visualization import WinView
                 win = WinView(self.config, self.player.score)
                 self.window.show_view(win)
@@ -187,7 +206,7 @@ class GameView(arcade.View):
             self.window.close()
 
         # update coordinates for ghosts
-        cell_size, offset_x, maze_top = self._grid_geometry()
+        cell_size, offset_x, maze_top = self.grid_geometry()
         for g in self.maze.ghosts:
             if g.dead is True:
                 g.sprite.visible = False
@@ -200,6 +219,7 @@ class GameView(arcade.View):
                 offset_x,
                 maze_top,
             )
+            self.fit_to_cell(g.sprite, cell_size, GHOST_CELL_FRACTION)
             g.sprite.center_x = cx
             g.sprite.center_y = cy
 
@@ -220,7 +240,8 @@ class GameView(arcade.View):
         self.player.sprite_super.visible = False
         self.player.sprite_cheat.visible = False
 
-        # Show the selected one
+        # Show the selected one (sized to the cell)
+        self.fit_to_cell(active_sprite, cell_size, PLAYER_CELL_FRACTION)
         active_sprite.center_x = cx
         active_sprite.center_y = cy
         active_sprite.visible = True
