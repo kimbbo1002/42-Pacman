@@ -6,7 +6,7 @@ from enum import Enum
 
 
 class Colors(Enum):
-    """ANSI color codes used to print warnings in the terminal."""
+    """Colors codes used to print warnings in the terminal."""
 
     RED = "\033[0;31m"
     YELLOW = "\033[1;33m"
@@ -14,6 +14,7 @@ class Colors(Enum):
     RESET = "\033[0m"
 
     def __str__(self):
+        """Return the raw code so the enum prints as its color."""
         return self.value
 
 
@@ -28,7 +29,6 @@ def log_warning(field_name: str, message: str, default: Any) -> None:
 
 class Config(BaseModel):
     """Game settings read from the config file, with safe defaults."""
-
     highscore_filename: str = Field(default="highscore.json")
     level: int = Field(default=10)
     width: int = Field(default=15)
@@ -68,7 +68,7 @@ class Config(BaseModel):
                 else:
                     validated_val = str(raw_value)
 
-                # 2. Specific range validations
+                # Specific range validations
                 if (
                     field_name in ['width', 'height']
                     and not (10 <= validated_val <= 30)
@@ -115,6 +115,7 @@ class Config(BaseModel):
 
     @model_validator(mode='after')
     def validate_points(self) -> Dict[str, Any]:
+        """Check point values and hierarchy, reset to defaults if invalid."""
         # check if points are in range
         if (
             not 0 < self.points_per_pacgum <= 250
@@ -138,7 +139,7 @@ class Config(BaseModel):
             self.points_per_super_pacgum = 50
             self.points_per_ghost = 200
             return self
-        
+
         # check if point hierarchy is correct
         if (
             not self.points_per_pacgum * 2 <= self.points_per_super_pacgum
@@ -156,11 +157,13 @@ class Config(BaseModel):
             self.points_per_super_pacgum = 50
             self.points_per_ghost = 200
             return self
-        
+
         return self
 
 
 def load_config() -> Config:
+    """Read the config file given on the command line, or fall back
+    to default values on any error."""
     if len(sys.argv) != 2:
         print(
             f"\n{Colors.RED}ERROR(CONFIG):\n{Colors.RESET}"
@@ -194,6 +197,7 @@ def load_config() -> Config:
 
 
 def test_parsing(config: Config) -> None:
+    """Print every config field and its value (debug helper)."""
     print(f"\n{Colors.GREEN}==TESTING=={Colors.RESET}")
     for attr in Config.model_fields:
         print(f"{attr} = {getattr(config, attr)}")

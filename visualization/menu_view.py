@@ -8,6 +8,7 @@ class MenuView(arcade.View):
     """Menu of the game, press SPACE to start to play."""
 
     def __init__(self, config: Config):
+        """Store the game config used to start a new game."""
         super().__init__()
         self.config = config
 
@@ -38,7 +39,8 @@ class MenuView(arcade.View):
             )
             game = GameView(self.config,
                             level=1,
-                            score=0)
+                            score=0,
+                            lives=self.config.lives)
             game.setup(generator)
             self.window.show_view(game)
         elif key == arcade.key.F:
