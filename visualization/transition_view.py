@@ -1,14 +1,18 @@
 import arcade
 from .game_view import GameView
+from parsing import Config
 from mazegenerator import MazeGenerator
+import random
 
 
 class TransitionView(arcade.View):
     """Screen of transition between two levels."""
 
-    def __init__(self, config):
+    def __init__(self, config: Config, score: int, next_level: int):
         super().__init__()
         self.config = config
+        self.score = score
+        self.next_level = next_level
 
     def on_show_view(self):
         "Setup the window with a black background."
@@ -20,11 +24,13 @@ class TransitionView(arcade.View):
         cx = self.window.width / 2
         cy = self.window.height / 2
 
-        arcade.draw_text("NEXT LEVEL", cx, cy + 60,
+        arcade.draw_text(f"LEVEL {self.next_level}", cx, cy + 60,
                          arcade.color.YELLOW, 64, anchor_x="center", bold=True)
         arcade.draw_text("Push SPACE to continue",
                          cx, cy - 20,
                          arcade.color.WHITE, 20, anchor_x="center")
+        arcade.draw_text(f"Your score : {self.score}", cx, cy - 200,
+                         arcade.color.BLUE_VIOLET, 50, anchor_x="center")
 
     def on_key_press(self, key, modifiers):
         """Start to play with SPACE, leave fullscreen with F,
@@ -33,11 +39,11 @@ class TransitionView(arcade.View):
             generator = MazeGenerator(
                 size=(self.config.width, self.config.height),
                 perfect=False,
-                seed=self.config.seed,
+                seed=random.random(),
             )
             game = GameView(self.config,
-                            level_index=0,
-                            score=0)
+                            level=self.next_level,
+                            score=self.score)
             game.setup(generator)
             self.window.show_view(game)
         elif key == arcade.key.F:

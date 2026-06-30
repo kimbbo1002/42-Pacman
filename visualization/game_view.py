@@ -21,13 +21,13 @@ SUPER_MODE_DELAY = 8.0
 class GameView(arcade.View):
     """View that draws the maze."""
 
-    def __init__(self, config: Config, level_index: int, score: int):
+    def __init__(self, config: Config, level: int, score: int):
         """Store the maze size and the positions of the pacgums."""
         super().__init__()
         self.config = config
         self.cols = config.width
         self.rows = config.height
-        self.level_index = level_index
+        self.level = level
         self.score = score
         self.time_passed = 0
         self.ghost_speed = 0.5
@@ -35,7 +35,7 @@ class GameView(arcade.View):
     def setup(self, generator: MazeGenerator):
         """Build the maze and place a pacgum in every cell."""
         maze = generator.maze
-        self.maze = Maze(maze, self.config)
+        self.maze = Maze(maze, self.config, self.score)
         self.maze.place_objects()
         self.player = self.maze.player
 
@@ -131,7 +131,7 @@ class GameView(arcade.View):
             self.player.move_player(-1, 0)
         elif key == arcade.key.RIGHT:
             self.player.move_player(1, 0)
-        
+
         elif key == arcade.key.C:
             if self.player.cheat_mode is False:
                 self.player.cheat_mode = True
@@ -142,6 +142,19 @@ class GameView(arcade.View):
                 self.maze.ghost_freeze = False
             else:
                 self.maze.ghost_freeze = True
+
+        # pass the level (DEBUG)
+        elif key == arcade.key.P:
+            if self.level == 10:
+                from visualization import WinView
+                win = WinView(self.config, self.player.score)
+                self.window.show_view(win)
+            else:
+                from visualization import TransitionView
+                transition = TransitionView(self.config,
+                                            self.player.score,
+                                            self.level + 1)
+                self.window.show_view(transition)
 
     def on_update(self, delta_time: float):
         """Run one game step: end super_mode when it times out, respawn the
@@ -169,10 +182,10 @@ class GameView(arcade.View):
 
         if now - self.player.respawning_start > RESPAWN_PLAYER_DURATION:
             self.player.respawning = False
-        
+
         if self.maze.end_of_game is True:
             self.window.close()
-        
+
         # update coordinates for ghosts
         cell_size, offset_x, maze_top = self._grid_geometry()
         for g in self.maze.ghosts:
@@ -190,7 +203,6 @@ class GameView(arcade.View):
             g.sprite.center_x = cx
             g.sprite.center_y = cy
 
-        
         # update coordinates for player
         cx, cy = self.cell_center(
             self.player.y, self.player.x,
@@ -214,6 +226,18 @@ class GameView(arcade.View):
         active_sprite.visible = True
 
         if self.maze.is_level_win():
-            from visualization import TransitionView
-            win = TransitionView(self.config)
-            self.window.show_view(win)
+            if self.level == 10:
+                from visualization import WinView
+                win = WinView(self.config, self.player.score)
+                self.window.show_view(win)
+            else:
+                from visualization import TransitionView
+                transition = TransitionView(self.config,
+                                            self.player.score,
+                                            self.level + 1)
+                self.window.show_view(transition)
+
+        if self.player.is_dead():
+            from visualization import LoseView
+            lose = LoseView(self.config, self.player.score)
+            self.window.show_view(lose)

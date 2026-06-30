@@ -13,7 +13,8 @@ WALL_LEFT = 8     # bit 8
 class Player:
     """The character moved by the user: eats pacgums and ghosts."""
 
-    def __init__(self, config: Config, x: int, y: int, lives: int, maze: Maze) -> None:
+    def __init__(self, config: Config, x: int, y: int, lives: int,
+                 maze: Maze, score: int) -> None:
         """Create the player at (x, y) with a number of lives."""
         self.config = config
         self.maze = maze
@@ -22,7 +23,7 @@ class Player:
         self.spawn_x = x
         self.spawn_y = y
         self.lives = lives
-        self.score = 0
+        self.score = score
         self.dead = False
         self.dead_since = 0.0
         self.respawning = False
@@ -137,9 +138,10 @@ class Player:
                     self.lives -= 1
                     break
 
-    def check_lives(self) -> None:
+    def is_dead(self) -> bool:
         if self.lives < 0:
-            self.maze.end_of_game = True
+            return True
+        return False
 
     def move_player(self, dx: int, dy: int) -> None:
         """Move the player by (dx, dy), then check pacgums and ghosts."""
@@ -155,4 +157,3 @@ class Player:
 
         self.monitor_score()
         self.check_ghost_collision()
-        self.check_lives()

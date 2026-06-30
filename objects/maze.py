@@ -42,7 +42,8 @@ class Cell:
 class Maze:
     """The grid of cells and everything placed on it."""
 
-    def __init__(self, maze: List[List[int]], config: Config) -> None:
+    def __init__(self, maze: List[List[int]], config: Config,
+                 score: int) -> None:
         """Initialize the maze, place pacgums & super_pacgums & player."""
         self.maze: List[List[Cell]] = []
         self.config = config
@@ -53,6 +54,7 @@ class Maze:
         self.end_of_game = False
         self.cheat_mode = False
         self.ghost_freeze = False
+        self.score = score
         # pacgums in the back layer, characters (ghosts + player) on top
         self.sprites = arcade.SpriteList()
         self.character_sprites = arcade.SpriteList()
@@ -101,7 +103,8 @@ class Maze:
 
         # place player
         self.player = Player(self.config, self.cols // 2,
-                             self.rows // 2, self.config.lives, self)
+                             self.rows // 2, self.config.lives,
+                             self, self.score)
         self.maze[self.rows // 2][self.cols // 2].player = True
 
         # place pacgums
