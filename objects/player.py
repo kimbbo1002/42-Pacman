@@ -9,10 +9,6 @@ WALL_RIGHT = 2    # bit 2
 WALL_BOTTOM = 4   # bit 4
 WALL_LEFT = 8     # bit 8
 
-PLAYER_SPEED = 5.0     # cells travelled per second
-COLLISION_DIST = 0.5   # grid units: closer than this to a ghost = contact
-MAX_STEP = 4.0         # cap movement per frame (guards against lag spikes)
-
 
 class Player:
     """The character moved by the user: eats pacgums and ghosts."""

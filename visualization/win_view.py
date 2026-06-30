@@ -12,7 +12,7 @@ class WinView(arcade.View):
 
     def on_show_view(self):
         "Setup the window with a black background."
-        self.window.background_color = arcade.color.DARK_GREEN
+        self.window.background_color = arcade.color.BLACK
 
     def on_draw(self):
         "Write the menu."
@@ -20,8 +20,8 @@ class WinView(arcade.View):
         cx = self.window.width / 2
         cy = self.window.height / 2
 
-        arcade.draw_text("CONGRATULATION, YOU WIN !", cx, cy + 80,
-                         arcade.color.WHITE, 50, anchor_x="center")
+        arcade.draw_text("CONGRATULATIONS, YOU WIN !", cx, cy + 80,
+                         arcade.color.GREEN, 50, anchor_x="center")
         arcade.draw_text(f"Your score : {self.score}", cx, cy - 20,
                          arcade.color.BLUE_VIOLET, 50, anchor_x="center")
         arcade.draw_text("Push SPACE to return to menu",
