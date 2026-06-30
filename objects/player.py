@@ -70,6 +70,8 @@ class Player:
     def is_available(self, dx: int, dy: int) -> bool:
         """Tell if the player can move by (dx, dy): no wall, no edge."""
         x2, y2 = self.x + dx, self.y + dy
+        if self.cheat_mode:
+            return True
         if x2 < 0 or x2 >= len(
                 self.maze.maze[0]) or y2 < 0 or y2 >= len(self.maze.maze):
             return False
