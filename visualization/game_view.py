@@ -247,7 +247,7 @@ class GameView(arcade.View):
         active_sprite.visible = True
 
         if self.maze.is_level_win():
-            if self.level == 10:
+            if self.level == self.config.level:
                 from visualization import WinView
                 win = WinView(self.config, self.player.score)
                 self.window.show_view(win)
