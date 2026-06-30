@@ -1,12 +1,13 @@
 from mazegenerator import MazeGenerator
 from .game_view import GameView
 import arcade
+from parsing import Config
 
 
 class MenuView(arcade.View):
     """Menu of the game, press SPACE to start to play."""
 
-    def __init__(self, config):
+    def __init__(self, config: Config):
         super().__init__()
         self.config = config
 
@@ -36,7 +37,7 @@ class MenuView(arcade.View):
                 seed=self.config.seed,
             )
             game = GameView(self.config,
-                            level_index=0,
+                            level=1,
                             score=0)
             game.setup(generator)
             self.window.show_view(game)

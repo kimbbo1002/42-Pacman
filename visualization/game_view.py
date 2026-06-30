@@ -13,6 +13,13 @@ WALL_LEFT = 8     # bit 8
 WALL_WIDTH = 3
 MARGIN = 50
 
+# Fraction of a cell that each sprite should span (keeps images sized
+# relative to the maze whatever the window or grid dimensions are).
+PLAYER_CELL_FRACTION = 0.8
+GHOST_CELL_FRACTION = 0.8
+PACGUM_CELL_FRACTION = 0.22
+SUPER_PACGUM_CELL_FRACTION = 0.5
+
 RESPAWN_PLAYER_DELAY = 0.0
 RESPAWN_PLAYER_DURATION = 3.0
 SUPER_MODE_DELAY = 8.0
@@ -21,13 +28,13 @@ SUPER_MODE_DELAY = 8.0
 class GameView(arcade.View):
     """View that draws the maze."""
 
-    def __init__(self, config: Config, level_index: int, score: int):
+    def __init__(self, config: Config, level: int, score: int):
         """Store the maze size and the positions of the pacgums."""
         super().__init__()
         self.config = config
         self.cols = config.width
         self.rows = config.height
-        self.level_index = level_index
+        self.level = level
         self.score = score
         self.time_passed = 0
         self.ghost_speed = 0.5
@@ -35,11 +42,11 @@ class GameView(arcade.View):
     def setup(self, generator: MazeGenerator):
         """Build the maze and place a pacgum in every cell."""
         maze = generator.maze
-        self.maze = Maze(maze, self.config)
+        self.maze = Maze(maze, self.config, self.score)
         self.maze.place_objects()
         self.player = self.maze.player
 
-    def _grid_geometry(self):
+    def grid_geometry(self):
         """Return the cell size and where to start drawing the maze."""
         w = self.window.width
         h = self.window.height
@@ -61,11 +68,19 @@ class GameView(arcade.View):
         cy = maze_top - row * cell_size - cell_size / 2
         return cx, cy
 
+    @staticmethod
+    def fit_to_cell(sprite: arcade.BasicSprite, cell_size: int,
+                    fraction: float) -> None:
+        """Scale a sprite so its largest side spans `fraction` of a cell,
+        keeping the texture aspect ratio (independent of its native size)."""
+        native = max(sprite.texture.width, sprite.texture.height)
+        sprite.scale = (cell_size * fraction) / native
+
     def on_draw(self):
         """Draw the walls and the pacgums on the screen."""
         self.clear()
 
-        cell_size, offset_x, maze_top = self._grid_geometry()
+        cell_size, offset_x, maze_top = self.grid_geometry()
         radius = max(2, cell_size // 10)
         s_radius = max(5, cell_size // 4)
 
@@ -94,7 +109,11 @@ class GameView(arcade.View):
                     arcade.draw_line(right, bottom, right, top,
                                      self.maze.assets.wall, WALL_WIDTH)
 
-                # display pacgums & super_pacgums
+                # display pacgums & super_pacgums (sized to the cell)
+                self.fit_to_cell(cell.sprite_pacgum, cell_size,
+                                 PACGUM_CELL_FRACTION)
+                self.fit_to_cell(cell.sprite_super_pacgum, cell_size,
+                                 SUPER_PACGUM_CELL_FRACTION)
                 cell.sprite_pacgum.center_x = cx
                 cell.sprite_pacgum.center_y = cy
                 cell.sprite_super_pacgum.center_x = cx
@@ -131,7 +150,7 @@ class GameView(arcade.View):
             self.player.move_player(-1, 0)
         elif key == arcade.key.RIGHT:
             self.player.move_player(1, 0)
-        
+
         elif key == arcade.key.C:
             if self.player.cheat_mode is False:
                 self.player.cheat_mode = True
@@ -142,6 +161,19 @@ class GameView(arcade.View):
                 self.maze.ghost_freeze = False
             else:
                 self.maze.ghost_freeze = True
+
+        # pass the level (DEBUG)
+        elif key == arcade.key.P:
+            if self.level == self.config.level:
+                from visualization import WinView
+                win = WinView(self.config, self.player.score)
+                self.window.show_view(win)
+            else:
+                from visualization import TransitionView
+                transition = TransitionView(self.config,
+                                            self.player.score,
+                                            self.level + 1)
+                self.window.show_view(transition)
 
     def on_update(self, delta_time: float):
         """Run one game step: end super_mode when it times out, respawn the
@@ -169,12 +201,12 @@ class GameView(arcade.View):
 
         if now - self.player.respawning_start > RESPAWN_PLAYER_DURATION:
             self.player.respawning = False
-        
+
         if self.maze.end_of_game is True:
             self.window.close()
-        
+
         # update coordinates for ghosts
-        cell_size, offset_x, maze_top = self._grid_geometry()
+        cell_size, offset_x, maze_top = self.grid_geometry()
         for g in self.maze.ghosts:
             if g.dead is True:
                 g.sprite.visible = False
@@ -187,10 +219,10 @@ class GameView(arcade.View):
                 offset_x,
                 maze_top,
             )
+            self.fit_to_cell(g.sprite, cell_size, GHOST_CELL_FRACTION)
             g.sprite.center_x = cx
             g.sprite.center_y = cy
 
-        
         # update coordinates for player
         cx, cy = self.cell_center(
             self.player.y, self.player.x,
@@ -208,12 +240,25 @@ class GameView(arcade.View):
         self.player.sprite_super.visible = False
         self.player.sprite_cheat.visible = False
 
-        # Show the selected one
+        # Show the selected one (sized to the cell)
+        self.fit_to_cell(active_sprite, cell_size, PLAYER_CELL_FRACTION)
         active_sprite.center_x = cx
         active_sprite.center_y = cy
         active_sprite.visible = True
 
         if self.maze.is_level_win():
-            from visualization import TransitionView
-            win = TransitionView(self.config)
-            self.window.show_view(win)
+            if self.level == 10:
+                from visualization import WinView
+                win = WinView(self.config, self.player.score)
+                self.window.show_view(win)
+            else:
+                from visualization import TransitionView
+                transition = TransitionView(self.config,
+                                            self.player.score,
+                                            self.level + 1)
+                self.window.show_view(transition)
+
+        if self.player.is_dead():
+            from visualization import LoseView
+            lose = LoseView(self.config, self.player.score)
+            self.window.show_view(lose)

@@ -9,11 +9,16 @@ WALL_RIGHT = 2    # bit 2
 WALL_BOTTOM = 4   # bit 4
 WALL_LEFT = 8     # bit 8
 
+PLAYER_SPEED = 5.0     # cells travelled per second
+COLLISION_DIST = 0.5   # grid units: closer than this to a ghost = contact
+MAX_STEP = 4.0         # cap movement per frame (guards against lag spikes)
+
 
 class Player:
     """The character moved by the user: eats pacgums and ghosts."""
 
-    def __init__(self, config: Config, x: int, y: int, lives: int, maze: Maze) -> None:
+    def __init__(self, config: Config, x: int, y: int, lives: int,
+                 maze: Maze, score: int) -> None:
         """Create the player at (x, y) with a number of lives."""
         self.config = config
         self.maze = maze
@@ -22,7 +27,7 @@ class Player:
         self.spawn_x = x
         self.spawn_y = y
         self.lives = lives
-        self.score = 0
+        self.score = score
         self.dead = False
         self.dead_since = 0.0
         self.respawning = False
@@ -70,6 +75,8 @@ class Player:
     def is_available(self, dx: int, dy: int) -> bool:
         """Tell if the player can move by (dx, dy): no wall, no edge."""
         x2, y2 = self.x + dx, self.y + dy
+        if self.cheat_mode:
+            return True
         if x2 < 0 or x2 >= len(
                 self.maze.maze[0]) or y2 < 0 or y2 >= len(self.maze.maze):
             return False
@@ -135,9 +142,10 @@ class Player:
                     self.lives -= 1
                     break
 
-    def check_lives(self) -> None:
+    def is_dead(self) -> bool:
         if self.lives < 0:
-            self.maze.end_of_game = True
+            return True
+        return False
 
     def move_player(self, dx: int, dy: int) -> None:
         """Move the player by (dx, dy), then check pacgums and ghosts."""
@@ -153,4 +161,3 @@ class Player:
 
         self.monitor_score()
         self.check_ghost_collision()
-        self.check_lives()
