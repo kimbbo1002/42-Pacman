@@ -212,3 +212,8 @@ class GameView(arcade.View):
         active_sprite.center_x = cx
         active_sprite.center_y = cy
         active_sprite.visible = True
+
+        if self.maze.is_level_win():
+            from visualization import TransitionView
+            win = TransitionView(self.config)
+            self.window.show_view(win)

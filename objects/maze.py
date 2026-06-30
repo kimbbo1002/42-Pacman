@@ -100,8 +100,8 @@ class Maze:
             self.maze[y][x].ghost = True
 
         # place player
-        self.player = Player(self.cols // 2, self.rows // 2,
-                             self.config.lives, self)
+        self.player = Player(self.config, self.cols // 2,
+                             self.rows // 2, self.config.lives, self)
         self.maze[self.rows // 2][self.cols // 2].player = True
 
         # place pacgums
@@ -115,6 +115,7 @@ class Maze:
                     self.pacgums += 1
                     self.sprites.append(cell.sprite_pacgum)
 
-    def check_pacgums_left(self) -> None:
+    def is_level_win(self) -> bool:
         if self.pacgums == 0:
-            self.end_of_game = True
+            return True
+        return False

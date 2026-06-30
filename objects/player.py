@@ -1,6 +1,7 @@
 from .maze import Maze
 import time
 import arcade
+from parsing import Config
 
 
 WALL_TOP = 1      # bit 1
@@ -12,8 +13,9 @@ WALL_LEFT = 8     # bit 8
 class Player:
     """The character moved by the user: eats pacgums and ghosts."""
 
-    def __init__(self, x: int, y: int, lives: int, maze: Maze) -> None:
+    def __init__(self, config: Config, x: int, y: int, lives: int, maze: Maze) -> None:
         """Create the player at (x, y) with a number of lives."""
+        self.config = config
         self.maze = maze
         self.x = x
         self.y = y
@@ -151,5 +153,4 @@ class Player:
 
         self.monitor_score()
         self.check_ghost_collision()
-        self.maze.check_pacgums_left()
         self.check_lives()
