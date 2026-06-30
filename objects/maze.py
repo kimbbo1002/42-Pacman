@@ -5,6 +5,7 @@ import arcade
 
 
 def load_pacgum_textures(assets: Assets) -> List[arcade.BasicSprite]:
+    """Return the [pacgum, super_pacgum] sprites for the current theme."""
     pacgum_texture = arcade.load_texture(
         assets.texture("pacgums", "pacgum"))
     super_pacgum_texture = arcade.load_texture(
@@ -43,7 +44,7 @@ class Maze:
     """The grid of cells and everything placed on it."""
 
     def __init__(self, maze: List[List[int]], config: Config,
-                 score: int) -> None:
+                 score: int, lives: int) -> None:
         """Initialize the maze, place pacgums & super_pacgums & player."""
         self.maze: List[List[Cell]] = []
         self.config = config
@@ -55,6 +56,7 @@ class Maze:
         self.cheat_mode = False
         self.ghost_freeze = False
         self.score = score
+        self.lives = lives
         # pacgums in the back layer, characters (ghosts + player) on top
         self.sprites = arcade.SpriteList()
         self.character_sprites = arcade.SpriteList()
@@ -82,7 +84,6 @@ class Maze:
             if not cell.pattern_42 and not cell.super_pacgum \
                     and not cell.ghost:
                 return x, y
-        # fallback: should never happen on a valid maze
         return cx, cy
 
     def place_objects(self) -> None:
@@ -121,7 +122,7 @@ class Maze:
 
         spawn_x, spawn_y = self.find_player_spawn()
         self.player = Player(self.config, spawn_x, spawn_y,
-                             self.config.lives, self, self.score)
+                             self.lives, self, self.score)
         self.maze[spawn_y][spawn_x].player = True
 
         # place pacgums (y over rows, x over columns)
@@ -136,6 +137,8 @@ class Maze:
                     self.sprites.append(cell.sprite_pacgum)
 
     def is_level_win(self) -> bool:
+        """ Check if there is still pacgums in the maze.
+            Return True if there isn't."""
         if self.pacgums == 0:
             return True
         return False

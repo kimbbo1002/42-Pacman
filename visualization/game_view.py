@@ -1,7 +1,7 @@
 from parsing import Config
 from mazegenerator import MazeGenerator
 import arcade
-from objects import Maze, move_ghosts
+from objects import Maze
 import time
 
 
@@ -28,7 +28,7 @@ SUPER_MODE_DELAY = 8.0
 class GameView(arcade.View):
     """View that draws the maze."""
 
-    def __init__(self, config: Config, level: int, score: int):
+    def __init__(self, config: Config, level: int, score: int, lives: int):
         """Store the maze size and the positions of the pacgums."""
         super().__init__()
         self.config = config
@@ -38,11 +38,12 @@ class GameView(arcade.View):
         self.score = score
         self.time_passed = 0
         self.ghost_speed = 0.5
+        self.lives = lives
 
     def setup(self, generator: MazeGenerator):
         """Build the maze and place a pacgum in every cell."""
         maze = generator.maze
-        self.maze = Maze(maze, self.config, self.score)
+        self.maze = Maze(maze, self.config, self.score, self.lives)
         self.maze.place_objects()
         self.player = self.maze.player
 
@@ -81,8 +82,6 @@ class GameView(arcade.View):
         self.clear()
 
         cell_size, offset_x, maze_top = self.grid_geometry()
-        radius = max(2, cell_size // 10)
-        s_radius = max(5, cell_size // 4)
 
         for r in range(self.rows):
             for c in range(self.cols):
@@ -94,6 +93,11 @@ class GameView(arcade.View):
                 bottom = top - cell_size
 
                 cx, cy = self.cell_center(r, c, cell_size, offset_x, maze_top)
+
+                # fully-walled "42" cells are filled with the wall color
+                if cell.pattern_42:
+                    arcade.draw_lrbt_rectangle_filled(
+                        left, right, bottom, top, self.maze.assets.wall)
 
                 # display walls
                 if cell.cell_wall & WALL_TOP:
@@ -172,6 +176,7 @@ class GameView(arcade.View):
                 from visualization import TransitionView
                 transition = TransitionView(self.config,
                                             self.player.score,
+                                            self.player.lives,
                                             self.level + 1)
                 self.window.show_view(transition)
 
@@ -179,10 +184,17 @@ class GameView(arcade.View):
         """Run one game step: end super_mode when it times out, respawn the
             player after its delay, set the background, and move the ghosts
             at their own speed."""
+        from objects import move_ghosts
         now = time.time()
 
         if now - self.player.super_mode_start > SUPER_MODE_DELAY:
             self.player.super_mode = False
+
+        # out of lives: end the game now, do not respawn
+        if self.player.is_dead():
+            from visualization import LoseView
+            self.window.show_view(LoseView(self.config, self.player.score))
+            return
 
         if (self.player.dead and now - self.player.dead_since
                 > RESPAWN_PLAYER_DELAY):
@@ -255,10 +267,6 @@ class GameView(arcade.View):
                 from visualization import TransitionView
                 transition = TransitionView(self.config,
                                             self.player.score,
+                                            self.player.lives,
                                             self.level + 1)
                 self.window.show_view(transition)
-
-        if self.player.is_dead():
-            from visualization import LoseView
-            lose = LoseView(self.config, self.player.score)
-            self.window.show_view(lose)

@@ -8,10 +8,13 @@ import random
 class TransitionView(arcade.View):
     """Screen of transition between two levels."""
 
-    def __init__(self, config: Config, score: int, next_level: int):
+    def __init__(self, config: Config, score: int,
+                 lives: int, next_level: int):
+        """Store the score, remaining lives and the level to play next."""
         super().__init__()
         self.config = config
         self.score = score
+        self.remaining_lives = lives
         self.next_level = next_level
 
     def on_show_view(self):
@@ -19,7 +22,7 @@ class TransitionView(arcade.View):
         self.window.background_color = arcade.color.BLACK
 
     def on_draw(self):
-        "Write the menu."
+        "Write the next level, the score, and the remaining lives."
         self.clear()
         cx = self.window.width / 2
         cy = self.window.height / 2
@@ -31,9 +34,12 @@ class TransitionView(arcade.View):
                          arcade.color.WHITE, 20, anchor_x="center")
         arcade.draw_text(f"Your score : {self.score}", cx, cy - 200,
                          arcade.color.BLUE_VIOLET, 50, anchor_x="center")
+        arcade.draw_text(f"Remaining lives : {self.remaining_lives}",
+                         cx, cy - 300,
+                         arcade.color.BLUE_VIOLET, 50, anchor_x="center")
 
     def on_key_press(self, key, modifiers):
-        """Start to play with SPACE, leave fullscreen with F,
+        """Start the next level with SPACE, leave fullscreen with F,
             and close the window with ESCAPE."""
         if key == arcade.key.SPACE:
             generator = MazeGenerator(
@@ -43,7 +49,8 @@ class TransitionView(arcade.View):
             )
             game = GameView(self.config,
                             level=self.next_level,
-                            score=self.score)
+                            score=self.score,
+                            lives=self.remaining_lives)
             game.setup(generator)
             self.window.show_view(game)
         elif key == arcade.key.F:

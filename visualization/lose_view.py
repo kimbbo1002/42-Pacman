@@ -3,9 +3,10 @@ from parsing import Config
 
 
 class LoseView(arcade.View):
-    """Screen of transition between two levels."""
+    """Screen of lose."""
 
     def __init__(self, config: Config, score: int):
+        """Store the config and the final score to display."""
         super().__init__()
         self.config = config
         self.score = score
@@ -15,7 +16,7 @@ class LoseView(arcade.View):
         self.window.background_color = arcade.color.BLACK
 
     def on_draw(self):
-        "Write the menu."
+        "Write the lose message and the score."
         self.clear()
         cx = self.window.width / 2
         cy = self.window.height / 2
@@ -33,10 +34,12 @@ class LoseView(arcade.View):
                          arcade.color.WHITE, 20, anchor_x="center")
 
     def on_key_press(self, key, modifiers):
-        """Start to play with SPACE, leave fullscreen with F,
+        """Return to menu with SPACE, leave fullscreen with F,
             and close the window with ESCAPE."""
         if key == arcade.key.SPACE:
             from .menu_view import MenuView
+            # sauvegarder le score (rajouter un encadré pour entrer
+            # le score et pouvoir le sauvegarder)
             menu = MenuView(self.config)
             self.window.show_view(menu)
 

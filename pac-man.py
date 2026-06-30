@@ -8,6 +8,7 @@ WINDOW_TITLE = "Pac-Man"
 
 
 def main() -> None:
+    """Load the config and open the game window on the menu."""
     try:
         config = load_config()
         print(config)

@@ -40,9 +40,9 @@ class Player:
             assets.texture("player", "super"))
         cheat_texture = arcade.load_texture(
             assets.texture("player", "cheat"))
-        self.sprite_normal = arcade.BasicSprite(normal_texture, scale=0.6, visible=False)
-        self.sprite_super = arcade.BasicSprite(super_texture, scale=0.6, visible=False)
-        self.sprite_cheat = arcade.BasicSprite(cheat_texture, scale=0.6, visible=False)
+        self.sprite_normal = arcade.BasicSprite(normal_texture, scale=0.6)
+        self.sprite_super = arcade.BasicSprite(super_texture, scale=0.6)
+        self.sprite_cheat = arcade.BasicSprite(cheat_texture, scale=0.6)
 
         # append sprites to the character layer (drawn on top of pacgums)
         self.maze.character_sprites.append(self.sprite_normal)
@@ -55,8 +55,6 @@ class Player:
         self.dead_since = time.time()
         self.lives -= 1
         self.maze.maze[self.y][self.x].player = False
-        if self.lives < 0:
-            self.maze.the_end = True
 
     def respawn(self):
         """Put the player back on its starting cell."""
@@ -101,9 +99,7 @@ class Player:
 
     def monitor_score(self) -> None:
         """Eat the pacgum on the current cell and add its points.
-
-        A super pacgum also turns on super_mode.
-        """
+            A super pacgum also turns on super_mode."""
         cell = self.maze.maze[self.y][self.x]
 
         if cell.super_pacgum is True:
@@ -135,11 +131,12 @@ class Player:
             else:
                 if self.respawning is False and self.cheat_mode is False:
                     self.die()
-                    self.lives -= 1
                     break
 
     def is_dead(self) -> bool:
-        if self.lives < 0:
+        """ Return True if the player no longer has lives.
+            False if he is still alive."""
+        if self.lives <= 0:
             return True
         return False
 
