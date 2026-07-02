@@ -93,7 +93,7 @@ class Config(BaseModel):
                     raise ValueError("maximum level of game is 20")
                 if (
                     field_name == 'lives'
-                    and validated_val > 10
+                    and validated_val > 5
                 ):
                     raise ValueError("maximum lives of player is 10")
                 if (
