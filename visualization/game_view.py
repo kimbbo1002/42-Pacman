@@ -136,9 +136,7 @@ class GameView(arcade.View):
     def on_key_press(self, key: int, modifiers):
         """Toggle fullscreen with F, go back to menu with Escape."""
         from .menu_view import MenuView
-        if key == arcade.key.F:
-            self.window.set_fullscreen(not self.window.fullscreen)
-        elif key == arcade.key.ESCAPE:
+        if key == arcade.key.ESCAPE:
             self.window.show_view(MenuView(Config(
                 width=self.cols,
                 height=self.rows,
