@@ -53,7 +53,5 @@ class TransitionView(arcade.View):
                             lives=self.remaining_lives)
             game.setup(generator)
             self.window.show_view(game)
-        elif key == arcade.key.F:
-            self.window.set_fullscreen(not self.window.fullscreen)
         elif key == arcade.key.ESCAPE:
             self.window.close()

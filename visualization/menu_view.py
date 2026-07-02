@@ -1,7 +1,8 @@
 from mazegenerator import MazeGenerator
 from .game_view import GameView
-import arcade
 from parsing import Config
+import arcade
+from objects import Score
 
 
 class MenuView(arcade.View):
@@ -27,6 +28,26 @@ class MenuView(arcade.View):
         arcade.draw_text("Push SPACE to play",
                          cx, cy - 20,
                          arcade.color.WHITE, 20, anchor_x="center")
+        arcade.draw_text("HIGHSCORES :",
+                         cx, cy - 200,
+                         arcade.color.BLUE_GRAY, 20, anchor_x="center",
+                         bold=True)
+
+        highscores = Score.load_scores()
+
+        cy_score = cy - 250
+        if highscores == []:
+            arcade.draw_text("No scores saved",
+                             cx, cy_score,
+                             arcade.color.WHITE, 20, anchor_x="center")
+        else:
+            for i, entry in enumerate(highscores):
+
+                arcade.draw_text(f"{i+1}. {entry['player_name']} :"
+                                 f" {entry['score']} pts",
+                                 cx, cy_score,
+                                 arcade.color.WHITE, 20, anchor_x="center")
+                cy_score -= 40
 
     def on_key_press(self, key, modifiers):
         """Start to play with SPACE, leave fullscreen with F,
@@ -43,7 +64,5 @@ class MenuView(arcade.View):
                             lives=self.config.lives)
             game.setup(generator)
             self.window.show_view(game)
-        elif key == arcade.key.F:
-            self.window.set_fullscreen(not self.window.fullscreen)
         elif key == arcade.key.ESCAPE:
             self.window.close()
