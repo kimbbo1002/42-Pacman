@@ -32,8 +32,11 @@ class MenuView(arcade.View):
                          cx, cy - 200,
                          arcade.color.BLUE_GRAY, 20, anchor_x="center",
                          bold=True)
-
-        highscores = Score.load_scores()
+        
+        try:
+            highscores = Score.load_scores()
+        except Exception:
+            highscores = []
 
         cy_score = cy - 250
         if highscores == []:
