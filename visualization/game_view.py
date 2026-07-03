@@ -336,7 +336,7 @@ class GameView(arcade.View):
                 self.player.move_left = True
             elif key == arcade.key.RIGHT:
                 self.player.move_right = True
-    
+
     def on_key_release(self, key: int, modifiers):
         if not self.pause:
             if key == arcade.key.UP:
@@ -355,7 +355,7 @@ class GameView(arcade.View):
         from objects import move_ghosts
         if not self.pause:
             now = time.time()
-            
+
             if self.player.move_time > 0.08:
                 if self.player.move_up:
                     self.player.move_player(0, -1)
