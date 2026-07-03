@@ -32,7 +32,7 @@ class MenuView(arcade.View):
                          cx, cy - 200,
                          arcade.color.BLUE_GRAY, 20, anchor_x="center",
                          bold=True)
-        
+
         try:
             highscores = Score.load_scores()
         except Exception:

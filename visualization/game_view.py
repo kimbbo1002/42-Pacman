@@ -20,7 +20,7 @@ GHOST_CELL_FRACTION = 0.8
 PACGUM_CELL_FRACTION = 0.22
 SUPER_PACGUM_CELL_FRACTION = 0.5
 
-RESPAWN_PLAYER_DELAY = 0.0
+RESPAWN_PLAYER_DELAY = 3.0
 RESPAWN_PLAYER_DURATION = 3.0
 SUPER_MODE_DELAY = 8.0
 
@@ -120,7 +120,6 @@ class GameView(arcade.View):
                 life_x += 100
         lives_list.draw()
 
-
     def display_score(self) -> None:
         """Draw the score and lives on the right side of the maze."""
         cell_size, offset_x, maze_top = self.grid_geometry()
@@ -129,12 +128,23 @@ class GameView(arcade.View):
         maze_right_edge = offset_x + maze_w
 
         info_x = maze_right_edge + 50
-        info_y_score = maze_top - 100
+        info_y_level = maze_top - 100
+        info_y_score = info_y_level - 100
         info_y_lives = info_y_score - 100
         if self.config.lives <= 5:
             info_y_time = info_y_lives - 200
         else:
             info_y_time = info_y_lives - 320
+
+        # display level
+        arcade.draw_text(
+            f"Level {self.level}",
+            info_x,
+            info_y_level,
+            arcade.color.YELLOW,
+            30,
+            font_name="Kenney Rocket"
+        )
 
         # display score
         arcade.draw_text(
@@ -164,7 +174,6 @@ class GameView(arcade.View):
             30,
             font_name="Kenney Rocket"
         )
-
 
     def on_draw(self):
         """Draw the walls and the pacgums on the screen."""
@@ -279,7 +288,7 @@ class GameView(arcade.View):
         if self.remaining_time_stock >= 1:
             self.remaining_time -= 1
             self.remaining_time_stock -= 1.0
-        
+
         if self.remaining_time < 0:
             self.player.lives = -1
 
@@ -347,6 +356,10 @@ class GameView(arcade.View):
         self.player.sprite_normal.visible = False
         self.player.sprite_super.visible = False
         self.player.sprite_cheat.visible = False
+
+        # While dead (waiting to respawn), keep the player hidden
+        if self.player.dead:
+            return
 
         # Show the selected one (sized to the cell)
         self.fit_to_cell(active_sprite, cell_size, PLAYER_CELL_FRACTION)
