@@ -1,7 +1,7 @@
 from parsing import Config
 from mazegenerator import MazeGenerator
 import arcade
-from objects import Maze
+from objects import Maze, Assets
 import time
 
 
@@ -20,7 +20,7 @@ GHOST_CELL_FRACTION = 0.8
 PACGUM_CELL_FRACTION = 0.22
 SUPER_PACGUM_CELL_FRACTION = 0.5
 
-RESPAWN_PLAYER_DELAY = 0.0
+RESPAWN_PLAYER_DELAY = 3.0
 RESPAWN_PLAYER_DURATION = 3.0
 SUPER_MODE_DELAY = 8.0
 
@@ -39,6 +39,9 @@ class GameView(arcade.View):
         self.time_passed = 0
         self.ghost_speed = 0.5
         self.lives = lives
+        self.remaining_time = config.level_max_time
+        self.remaining_time_stock = 0.0
+        arcade.resources.load_kenney_fonts()
 
     def setup(self, generator: MazeGenerator):
         """Build the maze and place a pacgum in every cell."""
@@ -76,6 +79,78 @@ class GameView(arcade.View):
         keeping the texture aspect ratio (independent of its native size)."""
         native = max(sprite.texture.width, sprite.texture.height)
         sprite.scale = (cell_size * fraction) / native
+
+    def draw_lives(self, info_x: int, info_y: int) -> None:
+        if self.config.theme == "pacman":
+            scale = 0.5
+        elif self.config.theme == "minecraft":
+            scale = 0.3
+        elif self.config.theme == "stardew_valley":
+            scale = 1.0
+        lives_list = arcade.SpriteList()
+        life_x = info_x + 100
+        life_y = info_y - 80
+        for i in range(self.player.lives):
+            texture_path = self.maze.assets.texture("player", "normal")
+            texture = arcade.load_texture(texture_path)
+            sprite = arcade.BasicSprite(
+                texture, center_x=life_x, center_y=life_y, scale=scale
+            )
+            lives_list.append(sprite)
+            life_x += 100
+        lives_list.draw()
+
+    def display_score(self) -> None:
+        """Draw the score and lives on the right side of the maze."""
+        cell_size, offset_x, maze_top = self.grid_geometry()
+
+        maze_w = self.cols * cell_size
+        maze_right_edge = offset_x + maze_w
+
+        info_x = maze_right_edge + 50
+        info_y_level = maze_top - 100
+        info_y_score = info_y_level - 100
+        info_y_lives = info_y_score - 100
+        info_y_time = info_y_lives - 200
+
+        # display level
+        arcade.draw_text(
+            f"Level {self.level}",
+            info_x,
+            info_y_level,
+            arcade.color.YELLOW,
+            30,
+            font_name="Kenney Rocket"
+        )
+
+        # display score
+        arcade.draw_text(
+            f"Score: {self.player.score}",
+            info_x, info_y_score,
+            arcade.color.YELLOW,
+            30,
+            font_name="Kenney Rocket"
+        )
+
+        # display lives
+        arcade.draw_text(
+            "Lives: ",
+            info_x, info_y_lives,
+            arcade.color.YELLOW,
+            30,
+            font_name="Kenney Rocket"
+        )
+        self.draw_lives(info_x, info_y_lives)
+
+        # display time
+        arcade.draw_text(
+            f"Time: {max(0, self.remaining_time)}",
+            info_x,
+            info_y_time,
+            arcade.color.YELLOW,
+            30,
+            font_name="Kenney Rocket"
+        )
 
     def on_draw(self):
         """Draw the walls and the pacgums on the screen."""
@@ -132,6 +207,7 @@ class GameView(arcade.View):
                     cell.sprite_pacgum.visible = False
         self.maze.sprites.draw()
         self.maze.character_sprites.draw()
+        self.display_score()
 
     def on_key_press(self, key: int, modifiers):
         """Toggle fullscreen with F, go back to menu with Escape."""
@@ -184,6 +260,14 @@ class GameView(arcade.View):
             at their own speed."""
         from objects import move_ghosts
         now = time.time()
+
+        self.remaining_time_stock += delta_time
+        if self.remaining_time_stock >= 1:
+            self.remaining_time -= 1
+            self.remaining_time_stock -= 1.0
+
+        if self.remaining_time < 0:
+            self.player.lives = -1
 
         if now - self.player.super_mode_start > SUPER_MODE_DELAY:
             self.player.super_mode = False
@@ -249,6 +333,10 @@ class GameView(arcade.View):
         self.player.sprite_normal.visible = False
         self.player.sprite_super.visible = False
         self.player.sprite_cheat.visible = False
+
+        # While dead (waiting to respawn), keep the player hidden
+        if self.player.dead:
+            return
 
         # Show the selected one (sized to the cell)
         self.fit_to_cell(active_sprite, cell_size, PLAYER_CELL_FRACTION)
