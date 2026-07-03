@@ -1,7 +1,7 @@
 from parsing import Config
 from mazegenerator import MazeGenerator
 import arcade
-from objects import Maze, Assets
+from objects import Maze
 import time
 
 
@@ -13,8 +13,6 @@ WALL_LEFT = 8     # bit 8
 WALL_WIDTH = 3
 MARGIN = 50
 
-# Fraction of a cell that each sprite should span (keeps images sized
-# relative to the maze whatever the window or grid dimensions are).
 PLAYER_CELL_FRACTION = 0.8
 GHOST_CELL_FRACTION = 0.8
 PACGUM_CELL_FRACTION = 0.22
@@ -100,8 +98,10 @@ class GameView(arcade.View):
             life_x += 100
         lives_list.draw()
 
-    def display_score(self) -> None:
-        """Draw the score and lives on the right side of the maze."""
+    def display_infos(self) -> None:
+        """Draw the level, score, remaining lives, remaining time
+            and remaining time before respawn when the player is dead
+            on the right side of the maze."""
         cell_size, offset_x, maze_top = self.grid_geometry()
 
         maze_w = self.cols * cell_size
@@ -112,6 +112,7 @@ class GameView(arcade.View):
         info_y_score = info_y_level - 100
         info_y_lives = info_y_score - 100
         info_y_time = info_y_lives - 200
+        info_y_time_respawn = info_y_time - 200
 
         # display level
         arcade.draw_text(
@@ -151,6 +152,20 @@ class GameView(arcade.View):
             30,
             font_name="Kenney Rocket"
         )
+
+        # remaining time before respawn
+        if self.player.dead:
+            now = time.time()
+            time_before_respawn = (RESPAWN_PLAYER_DELAY -
+                                   (now - self.player.dead_since)) + 1
+            arcade.draw_text(
+                f"Respawn in: {int(time_before_respawn)}",
+                info_x,
+                info_y_time_respawn,
+                arcade.color.YELLOW,
+                30,
+                font_name="Kenney Rocket"
+            )
 
     def on_draw(self):
         """Draw the walls and the pacgums on the screen."""
@@ -207,7 +222,7 @@ class GameView(arcade.View):
                     cell.sprite_pacgum.visible = False
         self.maze.sprites.draw()
         self.maze.character_sprites.draw()
-        self.display_score()
+        self.display_infos()
 
     def on_key_press(self, key: int, modifiers):
         """Toggle fullscreen with F, go back to menu with Escape."""
@@ -342,7 +357,12 @@ class GameView(arcade.View):
         self.fit_to_cell(active_sprite, cell_size, PLAYER_CELL_FRACTION)
         active_sprite.center_x = cx
         active_sprite.center_y = cy
-        active_sprite.visible = True
+
+        # While respawning (invincible)
+        if self.player.respawning:
+            active_sprite.visible = int(now / 0.2) % 2 == 0
+        else:
+            active_sprite.visible = True
 
         if self.maze.is_level_win():
             if self.level == self.config.level:
