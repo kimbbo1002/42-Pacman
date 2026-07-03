@@ -8,6 +8,6 @@
 	"points_per_super_pacgum": 50,
 	"points_per_ghost": 1000,
 	"seed": 42,
-	"level_max_time": 90,
+	"level_max_time": 10,
 	"theme": "pacman"
 }
