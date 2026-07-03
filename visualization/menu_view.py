@@ -33,7 +33,7 @@ class MenuView(arcade.View):
                          arcade.color.BLUE_GRAY, 20, anchor_x="center",
                          bold=True)
 
-        highscores = Score.load_scores()
+        highscores = Score.load_scores(self.config.highscore_filename)
 
         cy_score = cy - 250
         if highscores == []:

@@ -76,7 +76,7 @@ class WinView(arcade.View):
             from .menu_view import MenuView
 
             score = Score(self.input_field.text.strip(), self.score)
-            score.save()
+            score.save(self.config.highscore_filename)
 
             menu = MenuView(self.config)
             self.window.show_view(menu)
