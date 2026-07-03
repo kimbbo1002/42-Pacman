@@ -453,10 +453,11 @@ class GameView(arcade.View):
             if self.player.dead:
                 self.time_before_respawn = (RESPAWN_PLAYER_DELAY -
                                             (now - self.player.dead_since)) + 1
-            self.remaining_time_stock += delta_time
-            if self.remaining_time_stock >= 1:
-                self.remaining_time -= 1
-                self.remaining_time_stock -= 1.0
+            if not self.player.cheat_mode:
+                self.remaining_time_stock += delta_time
+                if self.remaining_time_stock >= 1:
+                    self.remaining_time -= 1
+                    self.remaining_time_stock -= 1.0
 
             if self.remaining_time < 0:
                 self.player.lives = -1
