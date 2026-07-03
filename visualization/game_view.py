@@ -26,7 +26,8 @@ SUPER_MODE_DELAY = 8.0
 class GameView(arcade.View):
     """View that draws the maze."""
 
-    def __init__(self, config: Config, level: int, score: int, lives: int):
+    def __init__(self, config: Config, level: int, score: int, lives: int,
+                 cheat_mode: bool = False):
         """Store the maze size and the positions of the pacgums."""
         super().__init__()
         self.config = config
@@ -34,6 +35,7 @@ class GameView(arcade.View):
         self.rows = config.height
         self.level = level
         self.score = score
+        self.cheat_mode = cheat_mode
         self.time_passed = 0
         self.ghost_speed = 0.5
         self.lives = lives
@@ -50,6 +52,7 @@ class GameView(arcade.View):
         self.maze = Maze(maze, self.config, self.score, self.lives)
         self.maze.place_objects()
         self.player = self.maze.player
+        self.player.cheat_mode = self.cheat_mode
 
     def grid_geometry(self):
         """Return the cell size and where to start drawing the maze."""
@@ -296,8 +299,8 @@ class GameView(arcade.View):
             else:
                 self.maze.ghost_freeze = True
 
-        # pass the level (DEBUG)
-        elif key == arcade.key.N:
+        # pass the level (Only in cheat mode)
+        elif key == arcade.key.N and self.player.cheat_mode:
             if self.level == self.config.level:
                 from visualization import WinView
                 win = WinView(self.config, self.player.score)
@@ -307,7 +310,8 @@ class GameView(arcade.View):
                 transition = TransitionView(self.config,
                                             self.player.score,
                                             self.player.lives,
-                                            self.level + 1)
+                                            self.level + 1,
+                                            self.player.cheat_mode)
                 self.window.show_view(transition)
 
         # pause the game
@@ -466,5 +470,6 @@ class GameView(arcade.View):
                     transition = TransitionView(self.config,
                                                 self.player.score,
                                                 self.player.lives,
-                                                self.level + 1)
+                                                self.level + 1,
+                                                self.player.cheat_mode)
                     self.window.show_view(transition)

@@ -9,13 +9,14 @@ class TransitionView(arcade.View):
     """Screen of transition between two levels."""
 
     def __init__(self, config: Config, score: int,
-                 lives: int, next_level: int):
+                 lives: int, next_level: int, cheat_mode: bool = False):
         """Store the score, remaining lives and the level to play next."""
         super().__init__()
         self.config = config
         self.score = score
         self.remaining_lives = lives
         self.next_level = next_level
+        self.cheat_mode = cheat_mode
 
     def on_show_view(self):
         "Setup the window with a black background."
@@ -60,7 +61,8 @@ class TransitionView(arcade.View):
             game = GameView(self.config,
                             level=self.next_level,
                             score=self.score,
-                            lives=self.remaining_lives)
+                            lives=self.remaining_lives,
+                            cheat_mode=self.cheat_mode)
             game.setup(generator)
             self.window.show_view(game)
         elif key == arcade.key.ESCAPE:
