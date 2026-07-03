@@ -99,8 +99,9 @@ class GameView(arcade.View):
         lives_list.draw()
 
     def display_infos(self) -> None:
-        """Draw the level, score, remaining lives and remaining time before
-            respawn on the right side of the maze."""
+        """Draw the level, score, remaining lives, remaining time
+            and remaining time before respawn when the player is dead
+            on the right side of the maze."""
         cell_size, offset_x, maze_top = self.grid_geometry()
 
         maze_w = self.cols * cell_size
