@@ -125,7 +125,7 @@ class GameView(arcade.View):
                 life_x += 100
         lives_list.draw()
 
-    def display_infos(self) -> None:
+    def display_info_right(self) -> None:
         """Draw the level, score, remaining lives, remaining time
             and remaining time before respawn when the player is dead
             on the right side of the maze."""
@@ -221,6 +221,86 @@ class GameView(arcade.View):
                 font_name="Kenney Rocket"
             )
 
+    def display_info_left(self) -> None:
+        """Display controls on the left side of the maze."""
+        cell_size, offset_x, maze_top = self.grid_geometry()
+
+        info_x = offset_x - 550
+        y_title = maze_top - 100
+
+        text = (
+            "Move Player: (Key Arrows)\n"
+            "Pause / Resume: p\n"
+            "Activate / Deactivate cheat mode: C\n"
+            "(During cheat mode) Freeze all ghosts: G\n"
+            "Skip to next level: N"
+        )
+        arcade.draw_text(
+            "[Commands]",
+            info_x,
+            y_title,
+            arcade.color.YELLOW,
+            20,
+            font_name="Kenney Rocket"
+        )
+        arcade.draw_text(
+            "> Normal Mode:",
+            info_x,
+            y_title - 100,
+            arcade.color.YELLOW,
+            20,
+            font_name="Kenney Rocket"
+        )
+        arcade.draw_text(
+            "- Move: (Key Arrows)",
+            info_x,
+            y_title - 150,
+            arcade.color.YELLOW,
+            20,
+            font_name="Kenney Rocket"
+        )
+        arcade.draw_text(
+            "- Pause: P",
+            info_x,
+            y_title - 200,
+            arcade.color.YELLOW,
+            20,
+            font_name="Kenney Rocket"
+        )
+        arcade.draw_text(
+            "> Cheat Mode:",
+            info_x,
+            y_title - 300,
+            arcade.color.YELLOW,
+            20,
+            font_name="Kenney Rocket"
+        )
+        arcade.draw_text(
+            "- Activate: C",
+            info_x,
+            y_title - 350,
+            arcade.color.YELLOW,
+            20,
+            font_name="Kenney Rocket"
+        )
+        arcade.draw_text(
+            "- Freeze Ghosts: G",
+            info_x,
+            y_title - 400,
+            arcade.color.YELLOW,
+            20,
+            font_name="Kenney Rocket"
+        )
+        arcade.draw_text(
+            "- Skip Level: N",
+            info_x,
+            y_title - 450,
+            arcade.color.YELLOW,
+            20,
+            font_name="Kenney Rocket"
+        )
+
+
     def on_draw(self):
         """Draw the walls and the pacgums on the screen."""
         self.clear()
@@ -276,7 +356,8 @@ class GameView(arcade.View):
                     cell.sprite_pacgum.visible = False
         self.maze.sprites.draw()
         self.maze.character_sprites.draw()
-        self.display_infos()
+        self.display_info_right()
+        self.display_info_left()
 
     def on_key_press(self, key: int, modifiers):
         """Toggle fullscreen with F, go back to menu with Escape."""
