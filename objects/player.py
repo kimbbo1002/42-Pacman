@@ -31,6 +31,11 @@ class Player:
         self.super_mode = False
         self.super_mode_start = 0
         self.cheat_mode = False
+        self.move_up = False
+        self.move_down = False
+        self.move_left = False
+        self.move_right = False
+        self.move_time = 0.0
 
         # initialize sprites for player, themed from the config
         assets = self.maze.assets
