@@ -86,18 +86,38 @@ class GameView(arcade.View):
         elif self.config.theme == "minecraft":
             scale = 0.3
         elif self.config.theme == "stardew_valley":
-            scale = 1.0
+            scale = 0.8
         lives_list = arcade.SpriteList()
         life_x = info_x + 100
         life_y = info_y - 80
-        for i in range(self.player.lives):
-            texture_path = self.maze.assets.texture("player", "normal")
-            texture = arcade.load_texture(texture_path)
-            sprite = arcade.BasicSprite(
-                texture, center_x=life_x, center_y=life_y, scale=scale
-            )
-            lives_list.append(sprite)
-            life_x += 100
+        if self.config.lives <= 5:
+            for i in range(self.player.lives):
+                texture_path = self.maze.assets.texture("player", "normal")
+                texture = arcade.load_texture(texture_path)
+                sprite = arcade.BasicSprite(
+                    texture, center_x=life_x, center_y=life_y, scale=scale
+                )
+                lives_list.append(sprite)
+                life_x += 100
+        else:
+            for i in range(5):
+                if self.player.lives > i:
+                    texture_path = self.maze.assets.texture("player", "normal")
+                    texture = arcade.load_texture(texture_path)
+                    sprite = arcade.BasicSprite(
+                        texture, center_x=life_x, center_y=life_y, scale=scale
+                    )
+                    lives_list.append(sprite)
+                    life_x += 100
+            life_x = info_x + 100
+            for i in range(self.player.lives - 5):
+                texture_path = self.maze.assets.texture("player", "normal")
+                texture = arcade.load_texture(texture_path)
+                sprite = arcade.BasicSprite(
+                    texture, center_x=life_x, center_y=life_y - 120, scale=scale
+                )
+                lives_list.append(sprite)
+                life_x += 100
         lives_list.draw()
 
 
@@ -111,7 +131,10 @@ class GameView(arcade.View):
         info_x = maze_right_edge + 50
         info_y_score = maze_top - 100
         info_y_lives = info_y_score - 100
-        info_y_time = info_y_lives - 200
+        if self.config.lives <= 5:
+            info_y_time = info_y_lives - 200
+        else:
+            info_y_time = info_y_lives - 320
 
         # display score
         arcade.draw_text(
