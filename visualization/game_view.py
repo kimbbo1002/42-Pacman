@@ -20,7 +20,7 @@ GHOST_CELL_FRACTION = 0.8
 PACGUM_CELL_FRACTION = 0.22
 SUPER_PACGUM_CELL_FRACTION = 0.5
 
-RESPAWN_PLAYER_DELAY = 0.0
+RESPAWN_PLAYER_DELAY = 3.0
 RESPAWN_PLAYER_DURATION = 3.0
 SUPER_MODE_DELAY = 8.0
 
@@ -265,7 +265,7 @@ class GameView(arcade.View):
         if self.remaining_time_stock >= 1:
             self.remaining_time -= 1
             self.remaining_time_stock -= 1.0
-        
+
         if self.remaining_time < 0:
             self.player.lives = -1
 
@@ -333,6 +333,10 @@ class GameView(arcade.View):
         self.player.sprite_normal.visible = False
         self.player.sprite_super.visible = False
         self.player.sprite_cheat.visible = False
+
+        # While dead (waiting to respawn), keep the player hidden
+        if self.player.dead:
+            return
 
         # Show the selected one (sized to the cell)
         self.fit_to_cell(active_sprite, cell_size, PLAYER_CELL_FRACTION)

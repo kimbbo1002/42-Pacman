@@ -58,7 +58,6 @@ class Player:
 
     def respawn(self):
         """Put the player back on its starting cell."""
-        self.maze.maze[self.y][self.x].player = False
         self.x = self.spawn_x
         self.y = self.spawn_y
         self.maze.maze[self.y][self.x].player = True
