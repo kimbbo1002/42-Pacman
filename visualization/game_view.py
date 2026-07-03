@@ -134,21 +134,29 @@ class GameView(arcade.View):
         )
 
         # display lives
+        if self.player.lives > 1:
+            color_lives = arcade.color.YELLOW
+        else:
+            color_lives = arcade.color.RED
         arcade.draw_text(
             "Lives: ",
             info_x, info_y_lives,
-            arcade.color.YELLOW,
+            color_lives,
             30,
             font_name="Kenney Rocket"
         )
         self.draw_lives(info_x, info_y_lives)
 
         # display time
+        if self.remaining_time > 5:
+            color_time = arcade.color.YELLOW
+        else:
+            color_time = arcade.color.RED
         arcade.draw_text(
             f"Time: {max(0, self.remaining_time)}",
             info_x,
             info_y_time,
-            arcade.color.YELLOW,
+            color_time,
             30,
             font_name="Kenney Rocket"
         )
