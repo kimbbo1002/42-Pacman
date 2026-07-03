@@ -228,20 +228,13 @@ class GameView(arcade.View):
         info_x = offset_x - 550
         y_title = maze_top - 100
 
-        text = (
-            "Move Player: (Key Arrows)\n"
-            "Pause / Resume: p\n"
-            "Activate / Deactivate cheat mode: C\n"
-            "(During cheat mode) Freeze all ghosts: G\n"
-            "Skip to next level: N"
-        )
         arcade.draw_text(
             "[Commands]",
             info_x,
             y_title,
             arcade.color.YELLOW,
             20,
-            font_name="Kenney Rocket"
+            font_name="Kenney Rocket Square"
         )
         arcade.draw_text(
             "> Normal Mode :",
@@ -249,7 +242,7 @@ class GameView(arcade.View):
             y_title - 100,
             arcade.color.YELLOW,
             20,
-            font_name="Kenney Rocket"
+            font_name="Kenney Rocket Square"
         )
         arcade.draw_text(
             "- Move : (Key Arrows)",
@@ -257,7 +250,7 @@ class GameView(arcade.View):
             y_title - 150,
             arcade.color.YELLOW,
             20,
-            font_name="Kenney Rocket"
+            font_name="Kenney Rocket Square"
         )
         arcade.draw_text(
             "- Pause : P",
@@ -265,7 +258,7 @@ class GameView(arcade.View):
             y_title - 200,
             arcade.color.YELLOW,
             20,
-            font_name="Kenney Rocket"
+            font_name="Kenney Rocket Square"
         )
         arcade.draw_text(
             "> Cheat Mode :",
@@ -273,7 +266,7 @@ class GameView(arcade.View):
             y_title - 300,
             arcade.color.YELLOW,
             20,
-            font_name="Kenney Rocket"
+            font_name="Kenney Rocket Square"
         )
         arcade.draw_text(
             "- Activate : C",
@@ -281,7 +274,7 @@ class GameView(arcade.View):
             y_title - 350,
             arcade.color.YELLOW,
             20,
-            font_name="Kenney Rocket"
+            font_name="Kenney Rocket Square"
         )
         arcade.draw_text(
             "- Freeze Ghosts : G",
@@ -289,7 +282,7 @@ class GameView(arcade.View):
             y_title - 400,
             arcade.color.YELLOW,
             20,
-            font_name="Kenney Rocket"
+            font_name="Kenney Rocket Square"
         )
         arcade.draw_text(
             "- Skip Level : N",
@@ -297,7 +290,7 @@ class GameView(arcade.View):
             y_title - 450,
             arcade.color.YELLOW,
             20,
-            font_name="Kenney Rocket"
+            font_name="Kenney Rocket Square"
         )
 
     def on_draw(self):
