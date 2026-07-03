@@ -52,6 +52,7 @@ class Maze:
         self.cols = config.width
         self.rows = config.height
         self.pacgums = 0
+        self.super_pacgums = 0
         self.end_of_game = False
         self.cheat_mode = False
         self.ghost_freeze = False
@@ -110,7 +111,7 @@ class Maze:
             cell = self.maze[y][x]
             cell.super_pacgum = True
             cell.point = self.config.points_per_super_pacgum
-            self.pacgums += 1
+            self.super_pacgums += 1
             self.sprites.append(cell.sprite_super_pacgum)
 
         self.ghosts: List[Ghost] = []

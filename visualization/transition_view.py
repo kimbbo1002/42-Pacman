@@ -27,6 +27,9 @@ class TransitionView(arcade.View):
         cx = self.window.width / 2
         cy = self.window.height / 2
 
+        arcade.draw_text("You win!", cx, cy + 180,
+                         arcade.color.GREEN, 50, anchor_x="center", bold=True)
+
         arcade.draw_text(f"LEVEL {self.next_level}", cx, cy + 60,
                          arcade.color.YELLOW, 64, anchor_x="center", bold=True)
         arcade.draw_text("Push SPACE to continue",
@@ -42,11 +45,18 @@ class TransitionView(arcade.View):
         """Start the next level with SPACE, leave fullscreen with F,
             and close the window with ESCAPE."""
         if key == arcade.key.SPACE:
-            generator = MazeGenerator(
-                size=(self.config.width, self.config.height),
-                perfect=False,
-                seed=random.random(),
-            )
+            try:
+                generator = MazeGenerator(
+                    size=(self.config.width, self.config.height),
+                    perfect=False,
+                    seed=random.random(),
+                )
+            except Exception as e:
+                raise RuntimeError(
+                    f"Failed to generate maze "
+                    f"(size={self.config.width}x{self.config.height}, "
+                    f"seed={self.config.seed})"
+                ) from e
             game = GameView(self.config,
                             level=self.next_level,
                             score=self.score,

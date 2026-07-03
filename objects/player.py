@@ -109,7 +109,7 @@ class Player:
         if cell.super_pacgum is True:
             self.score += cell.point
             cell.super_pacgum = False
-            self.maze.pacgums -= 1
+            self.maze.super_pacgums -= 1
 
             # Start super mode
             self.super_mode_start = time.time()

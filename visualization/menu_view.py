@@ -53,11 +53,18 @@ class MenuView(arcade.View):
         """Start to play with SPACE, leave fullscreen with F,
             and close the window with ESCAPE."""
         if key == arcade.key.SPACE:
-            generator = MazeGenerator(
-                size=(self.config.width, self.config.height),
-                perfect=False,
-                seed=self.config.seed,
-            )
+            try:
+                generator = MazeGenerator(
+                    size=(self.config.width, self.config.height),
+                    perfect=False,
+                    seed=self.config.seed,
+                )
+            except Exception as e:
+                raise RuntimeError(
+                    f"Failed to generate maze "
+                    f"(size={self.config.width}x{self.config.height}, "
+                    f"seed={self.config.seed})"
+                ) from e
             game = GameView(self.config,
                             level=1,
                             score=0,
