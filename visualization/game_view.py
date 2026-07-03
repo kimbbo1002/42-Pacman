@@ -88,7 +88,7 @@ class GameView(arcade.View):
         elif self.config.theme == "stardew_valley":
             scale = 0.8
         lives_list = arcade.SpriteList()
-        life_x = info_x + 100
+        life_x = info_x + 50
         life_y = info_y - 80
         if self.config.lives <= 5:
             for i in range(self.player.lives):
@@ -109,7 +109,7 @@ class GameView(arcade.View):
                     )
                     lives_list.append(sprite)
                     life_x += 100
-            life_x = info_x + 100
+            life_x = info_x + 50
             for i in range(self.player.lives - 5):
                 texture_path = self.maze.assets.texture("player", "normal")
                 texture = arcade.load_texture(texture_path)
