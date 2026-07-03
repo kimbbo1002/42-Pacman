@@ -39,6 +39,9 @@ class GameView(arcade.View):
         self.lives = lives
         self.remaining_time = config.level_max_time
         self.remaining_time_stock = 0.0
+        self.time_before_respawn = 0
+        self.pause = False
+        self.pause_start = 0.0
         arcade.resources.load_kenney_fonts()
 
     def setup(self, generator: MazeGenerator):
@@ -112,7 +115,8 @@ class GameView(arcade.View):
                 texture_path = self.maze.assets.texture("player", "normal")
                 texture = arcade.load_texture(texture_path)
                 sprite = arcade.BasicSprite(
-                    texture, center_x=life_x, center_y=life_y - 120, scale=scale
+                    texture, center_x=life_x, center_y=life_y - 120,
+                    scale=scale
                 )
                 lives_list.append(sprite)
                 life_x += 100
@@ -136,6 +140,7 @@ class GameView(arcade.View):
         else:
             info_y_time = info_y_lives - 320
         info_y_time_respawn = info_y_time - 200
+        info_y_pause = info_y_time_respawn - 200
 
         # display level
         arcade.draw_text(
@@ -186,15 +191,30 @@ class GameView(arcade.View):
 
         # remaining time before respawn
         if self.player.dead:
-            now = time.time()
-            time_before_respawn = (RESPAWN_PLAYER_DELAY -
-                                   (now - self.player.dead_since)) + 1
             arcade.draw_text(
-                f"Respawn in: {int(time_before_respawn)}",
+                f"Respawn in: {int(self.time_before_respawn)}",
                 info_x,
                 info_y_time_respawn,
                 arcade.color.YELLOW,
                 30,
+                font_name="Kenney Rocket"
+            )
+        # pause game
+        if self.pause:
+            arcade.draw_text(
+                "PAUSE",
+                info_x,
+                info_y_pause,
+                arcade.color.YELLOW,
+                50,
+                font_name="Kenney Rocket"
+            )
+            arcade.draw_text(
+                "Press P to resume",
+                info_x,
+                info_y_pause - 100,
+                arcade.color.YELLOW,
+                25,
                 font_name="Kenney Rocket"
             )
 
@@ -265,16 +285,6 @@ class GameView(arcade.View):
                 seed=42,
             )))
 
-        # controls of the player
-        elif key == arcade.key.UP:
-            self.player.move_player(0, -1)
-        elif key == arcade.key.DOWN:
-            self.player.move_player(0, 1)
-        elif key == arcade.key.LEFT:
-            self.player.move_player(-1, 0)
-        elif key == arcade.key.RIGHT:
-            self.player.move_player(1, 0)
-
         elif key == arcade.key.C:
             if self.player.cheat_mode is False:
                 self.player.cheat_mode = True
@@ -287,7 +297,7 @@ class GameView(arcade.View):
                 self.maze.ghost_freeze = True
 
         # pass the level (DEBUG)
-        elif key == arcade.key.P:
+        elif key == arcade.key.N:
             if self.level == self.config.level:
                 from visualization import WinView
                 win = WinView(self.config, self.player.score)
@@ -299,111 +309,137 @@ class GameView(arcade.View):
                                             self.player.lives,
                                             self.level + 1)
                 self.window.show_view(transition)
+
+        # pause the game
+        elif key == arcade.key.P:
+            if self.pause:
+                paused_duration = time.time() - self.pause_start
+                self.player.dead_since += paused_duration
+                self.player.super_mode_start += paused_duration
+                self.player.respawning_start += paused_duration
+                self.pause = False
+            else:
+                self.pause_start = time.time()
+                self.pause = True
+
+        # controls of the player
+        if not self.pause:
+            if key == arcade.key.UP:
+                self.player.move_player(0, -1)
+            elif key == arcade.key.DOWN:
+                self.player.move_player(0, 1)
+            elif key == arcade.key.LEFT:
+                self.player.move_player(-1, 0)
+            elif key == arcade.key.RIGHT:
+                self.player.move_player(1, 0)
 
     def on_update(self, delta_time: float):
         """Run one game step: end super_mode when it times out, respawn the
             player after its delay, set the background, and move the ghosts
             at their own speed."""
         from objects import move_ghosts
-        now = time.time()
+        if not self.pause:
+            now = time.time()
+            if self.player.dead:
+                self.time_before_respawn = (RESPAWN_PLAYER_DELAY -
+                                            (now - self.player.dead_since)) + 1
+            self.remaining_time_stock += delta_time
+            if self.remaining_time_stock >= 1:
+                self.remaining_time -= 1
+                self.remaining_time_stock -= 1.0
 
-        self.remaining_time_stock += delta_time
-        if self.remaining_time_stock >= 1:
-            self.remaining_time -= 1
-            self.remaining_time_stock -= 1.0
+            if self.remaining_time < 0:
+                self.player.lives = -1
 
-        if self.remaining_time < 0:
-            self.player.lives = -1
+            if now - self.player.super_mode_start > SUPER_MODE_DELAY:
+                self.player.super_mode = False
 
-        if now - self.player.super_mode_start > SUPER_MODE_DELAY:
-            self.player.super_mode = False
+            # out of lives: end the game now, do not respawn
+            if self.player.is_dead():
+                from visualization import LoseView
+                self.window.show_view(LoseView(self.config, self.player.score))
+                return
 
-        # out of lives: end the game now, do not respawn
-        if self.player.is_dead():
-            from visualization import LoseView
-            self.window.show_view(LoseView(self.config, self.player.score))
-            return
+            if (self.player.dead and now - self.player.dead_since
+                    > RESPAWN_PLAYER_DELAY):
+                self.player.respawn()
 
-        if (self.player.dead and now - self.player.dead_since
-                > RESPAWN_PLAYER_DELAY):
-            self.player.respawn()
-
-        if self.player.super_mode:
-            arcade.set_background_color(self.maze.assets.super_background)
-        else:
-            arcade.set_background_color(self.maze.assets.background)
-
-        if self.time_passed < self.ghost_speed:
-            self.time_passed += delta_time
-        else:
-            move_ghosts(self.player, self.maze.ghosts)
-            self.time_passed = 0
-
-        if now - self.player.respawning_start > RESPAWN_PLAYER_DURATION:
-            self.player.respawning = False
-
-        if self.maze.end_of_game is True:
-            self.window.close()
-
-        # update coordinates for ghosts
-        cell_size, offset_x, maze_top = self.grid_geometry()
-        for g in self.maze.ghosts:
-            if g.dead is True:
-                g.sprite.visible = False
-                continue
+            if self.player.super_mode:
+                arcade.set_background_color(self.maze.assets.super_background)
             else:
-                g.sprite.visible = True
+                arcade.set_background_color(self.maze.assets.background)
+
+            if self.time_passed < self.ghost_speed:
+                self.time_passed += delta_time
+            else:
+                move_ghosts(self.player, self.maze.ghosts)
+                self.time_passed = 0
+
+            if now - self.player.respawning_start > RESPAWN_PLAYER_DURATION:
+                self.player.respawning = False
+
+            if self.maze.end_of_game is True:
+                self.window.close()
+
+            # update coordinates for ghosts
+            cell_size, offset_x, maze_top = self.grid_geometry()
+            for g in self.maze.ghosts:
+                if g.dead is True:
+                    g.sprite.visible = False
+                    continue
+                else:
+                    g.sprite.visible = True
+                cx, cy = self.cell_center(
+                    g.y, g.x,
+                    cell_size,
+                    offset_x,
+                    maze_top,
+                )
+                self.fit_to_cell(g.sprite, cell_size, GHOST_CELL_FRACTION)
+                g.sprite.center_x = cx
+                g.sprite.center_y = cy
+
+            # update coordinates for player
             cx, cy = self.cell_center(
-                g.y, g.x,
-                cell_size,
-                offset_x,
-                maze_top,
+                self.player.y, self.player.x,
+                cell_size, offset_x, maze_top
             )
-            self.fit_to_cell(g.sprite, cell_size, GHOST_CELL_FRACTION)
-            g.sprite.center_x = cx
-            g.sprite.center_y = cy
-
-        # update coordinates for player
-        cx, cy = self.cell_center(
-            self.player.y, self.player.x,
-            cell_size, offset_x, maze_top
-        )
-        if self.player.super_mode:
-            active_sprite = self.player.sprite_super
-        elif self.player.cheat_mode:
-            active_sprite = self.player.sprite_cheat
-        else:
-            active_sprite = self.player.sprite_normal
-
-        # Hide every sprite
-        self.player.sprite_normal.visible = False
-        self.player.sprite_super.visible = False
-        self.player.sprite_cheat.visible = False
-
-        # While dead (waiting to respawn), keep the player hidden
-        if self.player.dead:
-            return
-
-        # Show the selected one (sized to the cell)
-        self.fit_to_cell(active_sprite, cell_size, PLAYER_CELL_FRACTION)
-        active_sprite.center_x = cx
-        active_sprite.center_y = cy
-
-        # While respawning (invincible)
-        if self.player.respawning:
-            active_sprite.visible = int(now / 0.2) % 2 == 0
-        else:
-            active_sprite.visible = True
-
-        if self.maze.is_level_win():
-            if self.level == self.config.level:
-                from visualization import WinView
-                win = WinView(self.config, self.player.score)
-                self.window.show_view(win)
+            if self.player.super_mode:
+                active_sprite = self.player.sprite_super
+            elif self.player.cheat_mode:
+                active_sprite = self.player.sprite_cheat
             else:
-                from visualization import TransitionView
-                transition = TransitionView(self.config,
-                                            self.player.score,
-                                            self.player.lives,
-                                            self.level + 1)
-                self.window.show_view(transition)
+                active_sprite = self.player.sprite_normal
+
+            # Hide every sprite
+            self.player.sprite_normal.visible = False
+            self.player.sprite_super.visible = False
+            self.player.sprite_cheat.visible = False
+
+            # While dead (waiting to respawn), keep the player hidden
+            if self.player.dead:
+                return
+
+            # Show the selected one (sized to the cell)
+            self.fit_to_cell(active_sprite, cell_size, PLAYER_CELL_FRACTION)
+            active_sprite.center_x = cx
+            active_sprite.center_y = cy
+
+            # While respawning (invincible)
+            if self.player.respawning:
+                active_sprite.visible = int(now / 0.2) % 2 == 0
+            else:
+                active_sprite.visible = True
+
+            if self.maze.is_level_win():
+                if self.level == self.config.level:
+                    from visualization import WinView
+                    win = WinView(self.config, self.player.score)
+                    self.window.show_view(win)
+                else:
+                    from visualization import TransitionView
+                    transition = TransitionView(self.config,
+                                                self.player.score,
+                                                self.player.lives,
+                                                self.level + 1)
+                    self.window.show_view(transition)

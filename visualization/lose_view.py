@@ -22,7 +22,7 @@ class LoseView(arcade.View):
             height=30,
             text_color=arcade.color.WHITE,
             font_size=20,
-
+            font_name="Kenney Rocket"
         )
         self.v_box.add(self.label)
 
