@@ -100,7 +100,6 @@ class GameView(arcade.View):
             life_x += 100
         lives_list.draw()
 
-
     def display_score(self) -> None:
         """Draw the score and lives on the right side of the maze."""
         cell_size, offset_x, maze_top = self.grid_geometry()
@@ -109,9 +108,20 @@ class GameView(arcade.View):
         maze_right_edge = offset_x + maze_w
 
         info_x = maze_right_edge + 50
-        info_y_score = maze_top - 100
+        info_y_level = maze_top - 100
+        info_y_score = info_y_level - 100
         info_y_lives = info_y_score - 100
         info_y_time = info_y_lives - 200
+
+        # display level
+        arcade.draw_text(
+            f"Level {self.level}",
+            info_x,
+            info_y_level,
+            arcade.color.YELLOW,
+            30,
+            font_name="Kenney Rocket"
+        )
 
         # display score
         arcade.draw_text(
@@ -141,7 +151,6 @@ class GameView(arcade.View):
             30,
             font_name="Kenney Rocket"
         )
-
 
     def on_draw(self):
         """Draw the walls and the pacgums on the screen."""
