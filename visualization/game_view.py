@@ -131,7 +131,10 @@ class GameView(arcade.View):
         info_y_level = maze_top - 100
         info_y_score = info_y_level - 100
         info_y_lives = info_y_score - 100
-        info_y_time = info_y_lives - 200
+        if self.config.lives <= 5:
+            info_y_time = info_y_lives - 200
+        else:
+            info_y_time = info_y_lives - 320
         info_y_time_respawn = info_y_time - 200
 
         # display level
