@@ -157,7 +157,7 @@ class GameView(arcade.View):
 
         # display score
         arcade.draw_text(
-            f"Score: {self.player.score}",
+            f"Score : {self.player.score}",
             info_x, info_y_score,
             arcade.color.YELLOW,
             30,
@@ -170,7 +170,7 @@ class GameView(arcade.View):
         else:
             color_lives = arcade.color.RED
         arcade.draw_text(
-            "Lives: ",
+            "Lives : ",
             info_x, info_y_lives,
             color_lives,
             30,
@@ -184,7 +184,7 @@ class GameView(arcade.View):
         else:
             color_time = arcade.color.RED
         arcade.draw_text(
-            f"Time: {max(0, self.remaining_time)}",
+            f"Time : {max(0, self.remaining_time)}",
             info_x,
             info_y_time,
             color_time,
@@ -195,7 +195,7 @@ class GameView(arcade.View):
         # remaining time before respawn
         if self.player.dead:
             arcade.draw_text(
-                f"Respawn in: {int(self.time_before_respawn)}",
+                f"Respawn in : {int(self.time_before_respawn)}",
                 info_x,
                 info_y_time_respawn,
                 arcade.color.YELLOW,
@@ -244,7 +244,7 @@ class GameView(arcade.View):
             font_name="Kenney Rocket"
         )
         arcade.draw_text(
-            "> Normal Mode:",
+            "> Normal Mode :",
             info_x,
             y_title - 100,
             arcade.color.YELLOW,
@@ -252,7 +252,7 @@ class GameView(arcade.View):
             font_name="Kenney Rocket"
         )
         arcade.draw_text(
-            "- Move: (Key Arrows)",
+            "- Move : (Key Arrows)",
             info_x,
             y_title - 150,
             arcade.color.YELLOW,
@@ -260,7 +260,7 @@ class GameView(arcade.View):
             font_name="Kenney Rocket"
         )
         arcade.draw_text(
-            "- Pause: P",
+            "- Pause : P",
             info_x,
             y_title - 200,
             arcade.color.YELLOW,
@@ -268,7 +268,7 @@ class GameView(arcade.View):
             font_name="Kenney Rocket"
         )
         arcade.draw_text(
-            "> Cheat Mode:",
+            "> Cheat Mode :",
             info_x,
             y_title - 300,
             arcade.color.YELLOW,
@@ -276,7 +276,7 @@ class GameView(arcade.View):
             font_name="Kenney Rocket"
         )
         arcade.draw_text(
-            "- Activate: C",
+            "- Activate : C",
             info_x,
             y_title - 350,
             arcade.color.YELLOW,
@@ -284,7 +284,7 @@ class GameView(arcade.View):
             font_name="Kenney Rocket"
         )
         arcade.draw_text(
-            "- Freeze Ghosts: G",
+            "- Freeze Ghosts : G",
             info_x,
             y_title - 400,
             arcade.color.YELLOW,
@@ -292,14 +292,13 @@ class GameView(arcade.View):
             font_name="Kenney Rocket"
         )
         arcade.draw_text(
-            "- Skip Level: N",
+            "- Skip Level : N",
             info_x,
             y_title - 450,
             arcade.color.YELLOW,
             20,
             font_name="Kenney Rocket"
         )
-
 
     def on_draw(self):
         """Draw the walls and the pacgums on the screen."""
