@@ -267,13 +267,13 @@ class GameView(arcade.View):
 
         # controls of the player
         elif key == arcade.key.UP:
-            self.player.move_player(0, -1)
+            self.player.move_up = True
         elif key == arcade.key.DOWN:
-            self.player.move_player(0, 1)
+            self.player.move_down = True
         elif key == arcade.key.LEFT:
-            self.player.move_player(-1, 0)
+            self.player.move_left = True
         elif key == arcade.key.RIGHT:
-            self.player.move_player(1, 0)
+            self.player.move_right = True
 
         elif key == arcade.key.C:
             if self.player.cheat_mode is False:
@@ -299,6 +299,16 @@ class GameView(arcade.View):
                                             self.player.lives,
                                             self.level + 1)
                 self.window.show_view(transition)
+    
+    def on_key_release(self, key: int, modifiers):
+        if key == arcade.key.UP:
+            self.player.move_up = False
+        elif key == arcade.key.DOWN:
+            self.player.move_down = False
+        elif key == arcade.key.LEFT:
+            self.player.move_left = False
+        elif key == arcade.key.RIGHT:
+            self.player.move_right = False
 
     def on_update(self, delta_time: float):
         """Run one game step: end super_mode when it times out, respawn the
@@ -306,6 +316,20 @@ class GameView(arcade.View):
             at their own speed."""
         from objects import move_ghosts
         now = time.time()
+
+        # move player
+        if self.player.move_time > 0.08:
+            if self.player.move_up:
+                self.player.move_player(0, -1)
+            elif self.player.move_down:
+                self.player.move_player(0, 1)
+            elif self.player.move_left:
+                self.player.move_player(-1, 0)
+            elif self.player.move_right:
+                self.player.move_player(1, 0)
+            self.player.move_time = 0.0
+        else:
+            self.player.move_time += delta_time
 
         self.remaining_time_stock += delta_time
         if self.remaining_time_stock >= 1:
