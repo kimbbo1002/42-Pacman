@@ -21,6 +21,8 @@ class MenuView(arcade.View):
         "Write the menu."
         self.clear()
         cx = self.window.width / 2
+        cx_scores = cx - 500
+        cx_rules = cx + 500
         cy = self.window.height / 2
 
         arcade.draw_text("PAC-MAN", cx, cy + 60,
@@ -28,8 +30,10 @@ class MenuView(arcade.View):
         arcade.draw_text("Push SPACE to play",
                          cx, cy - 20,
                          arcade.color.WHITE, 20, anchor_x="center")
+
+        # Highscores display
         arcade.draw_text("HIGHSCORES :",
-                         cx, cy - 200,
+                         cx_scores, cy - 200,
                          arcade.color.BLUE_GRAY, 20, anchor_x="center",
                          bold=True)
 
@@ -38,16 +42,33 @@ class MenuView(arcade.View):
         cy_score = cy - 250
         if highscores == []:
             arcade.draw_text("No scores saved",
-                             cx, cy_score,
+                             cx_scores, cy_score,
                              arcade.color.WHITE, 20, anchor_x="center")
         else:
             for i, entry in enumerate(highscores):
 
                 arcade.draw_text(f"{i+1}. {entry['player_name']} :"
                                  f" {entry['score']} pts",
-                                 cx, cy_score,
+                                 cx_scores, cy_score,
                                  arcade.color.WHITE, 20, anchor_x="center")
                 cy_score -= 40
+
+        # Commands display
+        arcade.draw_text("COMMANDS AND RULES :",
+                         cx_rules, cy - 200,
+                         arcade.color.BLUE_GRAY, 20, anchor_x="center",
+                         bold=True, width=800)
+        arcade.draw_text("** You will spawn in the middle of a maze **\n"
+                         "-> Use the arrows to move through the corridors\n"
+                         "-> Hold an arrow key to move continuously "
+                         "in that direction\n"
+                         "-> Eat all the Pacgums to win the level\n"
+                         "-> If a ghost catches you, you lose a life\n"
+                         "-> Game Over when you run out of lives or time",
+                         cx_rules + 170, cy - 250,
+                         arcade.color.WHITE, 20, anchor_x="center",
+                         multiline=True,
+                         width=1000)
 
     def on_key_press(self, key, modifiers):
         """Start to play with SPACE, leave fullscreen with F,

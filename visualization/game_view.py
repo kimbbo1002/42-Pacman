@@ -143,7 +143,7 @@ class GameView(arcade.View):
         else:
             info_y_time = info_y_lives - 320
         info_y_time_respawn = info_y_time - 200
-        info_y_pause = info_y_time_respawn - 200
+        info_y_cheat_mode = info_y_time_respawn - 200
 
         # display level
         arcade.draw_text(
@@ -202,22 +202,14 @@ class GameView(arcade.View):
                 30,
                 font_name="Kenney Rocket"
             )
-        # pause game
-        if self.pause:
+        # cheatmode
+        if self.player.cheat_mode:
             arcade.draw_text(
-                "PAUSE",
+                "CHEAT MODE",
                 info_x,
-                info_y_pause,
+                info_y_cheat_mode,
                 arcade.color.YELLOW,
-                50,
-                font_name="Kenney Rocket"
-            )
-            arcade.draw_text(
-                "Press P to resume",
-                info_x,
-                info_y_pause - 100,
-                arcade.color.YELLOW,
-                25,
+                30,
                 font_name="Kenney Rocket"
             )
 
@@ -387,17 +379,12 @@ class GameView(arcade.View):
                                             self.player.cheat_mode)
                 self.window.show_view(transition)
 
-        # pause the game
+        # pause the game: freeze time and show the pause menu
         elif key == arcade.key.P:
-            if self.pause:
-                paused_duration = time.time() - self.pause_start
-                self.player.dead_since += paused_duration
-                self.player.super_mode_start += paused_duration
-                self.player.respawning_start += paused_duration
-                self.pause = False
-            else:
-                self.pause_start = time.time()
-                self.pause = True
+            from .pause_view import PauseView
+            self.pause = True
+            self.pause_start = time.time()
+            self.window.show_view(PauseView(self))
 
         # controls of the player
         if not self.pause:
@@ -420,6 +407,19 @@ class GameView(arcade.View):
                 self.player.move_left = False
             elif key == arcade.key.RIGHT:
                 self.player.move_right = False
+
+    def resume(self):
+        """Resume the game after a pause.
+
+        Shift every wall-clock timer by the paused duration so nothing
+        (respawn, super mode, invincibility) expires while the game was
+        frozen behind the pause menu."""
+        paused_duration = time.time() - self.pause_start
+        self.player.dead_since += paused_duration
+        self.player.super_mode_start += paused_duration
+        self.player.respawning_start += paused_duration
+        self.pause = False
+        self.window.show_view(self)
 
     def on_update(self, delta_time: float):
         """Run one game step: end super_mode when it times out, respawn the
