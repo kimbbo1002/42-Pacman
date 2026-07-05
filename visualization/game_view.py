@@ -22,6 +22,11 @@ RESPAWN_PLAYER_DELAY = 3.0
 RESPAWN_PLAYER_DURATION = 3.0
 SUPER_MODE_DELAY = 8.0
 
+REFERENCE_WIDTH = 2560
+REFERENCE_HEIGHT = 1440
+MIN_UI_SCALE = 0.5
+MAX_UI_SCALE = 1.5
+
 
 class GameView(arcade.View):
     """View that draws the maze."""
@@ -83,17 +88,26 @@ class GameView(arcade.View):
         keeping the texture aspect ratio (independent of its native size)."""
         native = max(sprite.texture.width, sprite.texture.height)
         sprite.scale = (cell_size * fraction) / native
+    
+    def ui_scale(self) -> float:
+        w = self.window.width
+        h = self.window.height
+        scale = min(w / REFERENCE_WIDTH, h / REFERENCE_HEIGHT)
+        return max(MIN_UI_SCALE, min(scale, MAX_UI_SCALE))
 
     def draw_lives(self, info_x: int, info_y: int) -> None:
+        ui_scale = self.ui_scale()
         if self.config.theme == "pacman":
-            scale = 0.5
+            theme_scale = 0.5
         elif self.config.theme == "minecraft":
-            scale = 0.3
+            theme_scale = 0.3
         elif self.config.theme == "stardew_valley":
-            scale = 0.8
+            theme_scale = 0.8
+        scale = theme_scale * ui_scale
+        spacing = 100 * ui_scale
         lives_list = arcade.SpriteList()
-        life_x = info_x + 50
-        life_y = info_y - 80
+        life_x = info_x + 50 * ui_scale
+        life_y = info_y - 80 * ui_scale
         if self.config.lives <= 5:
             for i in range(self.player.lives):
                 texture_path = self.maze.assets.texture("player", "normal")
@@ -102,7 +116,7 @@ class GameView(arcade.View):
                     texture, center_x=life_x, center_y=life_y, scale=scale
                 )
                 lives_list.append(sprite)
-                life_x += 100
+                life_x += spacing
         else:
             for i in range(5):
                 if self.player.lives > i:
@@ -112,17 +126,17 @@ class GameView(arcade.View):
                         texture, center_x=life_x, center_y=life_y, scale=scale
                     )
                     lives_list.append(sprite)
-                    life_x += 100
-            life_x = info_x + 50
+                    life_x += spacing
+            life_x = info_x + 50 * ui_scale
             for i in range(self.player.lives - 5):
                 texture_path = self.maze.assets.texture("player", "normal")
                 texture = arcade.load_texture(texture_path)
                 sprite = arcade.BasicSprite(
-                    texture, center_x=life_x, center_y=life_y - 120,
+                    texture, center_x=life_x, center_y=life_y - 120 * ui_scale,
                     scale=scale
                 )
                 lives_list.append(sprite)
-                life_x += 100
+                life_x += spacing
         lives_list.draw()
 
     def display_info_right(self) -> None:
@@ -130,20 +144,22 @@ class GameView(arcade.View):
             and remaining time before respawn when the player is dead
             on the right side of the maze."""
         cell_size, offset_x, maze_top = self.grid_geometry()
+        ui_scale = self.ui_scale()
+        font_size = int(30 * ui_scale)
 
         maze_w = self.cols * cell_size
         maze_right_edge = offset_x + maze_w
 
-        info_x = maze_right_edge + 50
-        info_y_level = maze_top - 100
-        info_y_score = info_y_level - 100
-        info_y_lives = info_y_score - 100
+        info_x = maze_right_edge + 50 * ui_scale
+        info_y_level = maze_top - 100 * ui_scale
+        info_y_score = info_y_level - 100 * ui_scale
+        info_y_lives = info_y_score - 100 * ui_scale
         if self.config.lives <= 5:
-            info_y_time = info_y_lives - 200
+            info_y_time = info_y_lives - 200 * ui_scale
         else:
-            info_y_time = info_y_lives - 320
-        info_y_time_respawn = info_y_time - 200
-        info_y_cheat_mode = info_y_time_respawn - 200
+            info_y_time = info_y_lives - 320 * ui_scale
+        info_y_time_respawn = info_y_time - 200 * ui_scale
+        info_y_cheat_mode = info_y_time_respawn - 200 * ui_scale
 
         # display level
         arcade.draw_text(
@@ -151,7 +167,7 @@ class GameView(arcade.View):
             info_x,
             info_y_level,
             arcade.color.YELLOW,
-            30,
+            font_size,
             font_name="Kenney Rocket"
         )
 
@@ -160,7 +176,7 @@ class GameView(arcade.View):
             f"Score : {self.player.score}",
             info_x, info_y_score,
             arcade.color.YELLOW,
-            30,
+            font_size,
             font_name="Kenney Rocket"
         )
 
@@ -173,7 +189,7 @@ class GameView(arcade.View):
             "Lives : ",
             info_x, info_y_lives,
             color_lives,
-            30,
+            font_size,
             font_name="Kenney Rocket"
         )
         self.draw_lives(info_x, info_y_lives)
@@ -188,7 +204,7 @@ class GameView(arcade.View):
             info_x,
             info_y_time,
             color_time,
-            30,
+            font_size,
             font_name="Kenney Rocket"
         )
 
@@ -199,7 +215,7 @@ class GameView(arcade.View):
                 info_x,
                 info_y_time_respawn,
                 arcade.color.YELLOW,
-                30,
+                font_size,
                 font_name="Kenney Rocket"
             )
         # cheatmode
@@ -209,79 +225,81 @@ class GameView(arcade.View):
                 info_x,
                 info_y_cheat_mode,
                 arcade.color.YELLOW,
-                30,
+                font_size,
                 font_name="Kenney Rocket"
             )
 
     def display_info_left(self) -> None:
         """Display controls on the left side of the maze."""
         cell_size, offset_x, maze_top = self.grid_geometry()
+        ui_scale = self.ui_scale()
+        font_size = int(20 * ui_scale)
 
-        info_x = offset_x - 550
-        y_title = maze_top - 100
+        info_x = offset_x - 550 * ui_scale
+        y_title = maze_top - 100 * ui_scale
 
         arcade.draw_text(
             "[Commands]",
             info_x,
             y_title,
             arcade.color.YELLOW,
-            20,
+            font_size,
             font_name="Kenney Rocket Square"
         )
         arcade.draw_text(
             "> Normal Mode :",
             info_x,
-            y_title - 100,
+            y_title - 100 * ui_scale,
             arcade.color.YELLOW,
-            20,
+            font_size,
             font_name="Kenney Rocket Square"
         )
         arcade.draw_text(
             "- Move : (Key Arrows)",
             info_x,
-            y_title - 150,
+            y_title - 150 * ui_scale,
             arcade.color.YELLOW,
-            20,
+            font_size,
             font_name="Kenney Rocket Square"
         )
         arcade.draw_text(
             "- Pause : P",
             info_x,
-            y_title - 200,
+            y_title - 200 * ui_scale,
             arcade.color.YELLOW,
-            20,
+            font_size,
             font_name="Kenney Rocket Square"
         )
         arcade.draw_text(
             "> Cheat Mode :",
             info_x,
-            y_title - 300,
+            y_title - 300 * ui_scale,
             arcade.color.YELLOW,
-            20,
+            font_size,
             font_name="Kenney Rocket Square"
         )
         arcade.draw_text(
             "- Activate : C",
             info_x,
-            y_title - 350,
+            y_title - 350 * ui_scale,
             arcade.color.YELLOW,
-            20,
+            font_size,
             font_name="Kenney Rocket Square"
         )
         arcade.draw_text(
             "- Freeze Ghosts : G",
             info_x,
-            y_title - 400,
+            y_title - 400 * ui_scale,
             arcade.color.YELLOW,
-            20,
+            font_size,
             font_name="Kenney Rocket Square"
         )
         arcade.draw_text(
             "- Skip Level : N",
             info_x,
-            y_title - 450,
+            y_title - 450 * ui_scale,
             arcade.color.YELLOW,
-            20,
+            font_size,
             font_name="Kenney Rocket Square"
         )
 
