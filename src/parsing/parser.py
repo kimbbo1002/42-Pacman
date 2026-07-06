@@ -49,6 +49,13 @@ class Config(BaseModel):
         if not isinstance(data, dict):
             return data
 
+        for f_name in data.keys():
+            if f_name not in cls.model_fields:
+                print(
+                    f"\n{Colors.YELLOW}WARNING(CONFIG):\n{Colors.RESET}"
+                    f"Unknown field '{f_name}' in config file, ignoring it"
+                )
+
         clean_data = {}
         themes = ["pacman", "stardew_valley", "minecraft"]
         for field_name, field_info in cls.model_fields.items():
