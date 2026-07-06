@@ -63,8 +63,8 @@ class Config(BaseModel):
             try:
                 if field_info.annotation is int:
                     validated_val = int(raw_value)
-                    if validated_val < 0:
-                        raise ValueError("needs to be a positive integer")
+                    if validated_val <= 0:
+                        raise ValueError("needs to be greater than 0")
                 else:
                     validated_val_str = str(raw_value)
 
@@ -78,9 +78,9 @@ class Config(BaseModel):
                     )
                 if (
                     field_name == 'level_max_time'
-                    and validated_val > 150
+                    and not 10 <= validated_val <= 180
                 ):
-                    raise ValueError("maximum time per level is 150 seconds")
+                    raise ValueError("time per level must be between 10 and 180 seconds")
                 if (
                     field_name == 'highscore_filename'
                     and not validated_val_str.endswith('.json')
