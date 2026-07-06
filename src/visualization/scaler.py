@@ -1,10 +1,14 @@
+import arcade
+from typing import Any
+
+
 REFERENCE_WIDTH = 2560
 REFERENCE_HEIGHT = 1440
 MIN_UI_SCALE = 0.5
 MAX_UI_SCALE = 1.5
 
 
-def ui_scale(window) -> float:
+def ui_scale(window: arcade.Window) -> Any:
     """Return a scale factor for text and spacing based on window size."""
     scale = min(window.width / REFERENCE_WIDTH,
                 window.height / REFERENCE_HEIGHT)

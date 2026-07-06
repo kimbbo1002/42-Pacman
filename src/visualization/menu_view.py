@@ -9,16 +9,16 @@ from .scaler import ui_scale
 class MenuView(arcade.View):
     """Menu of the game, press SPACE to start to play."""
 
-    def __init__(self, config: Config):
+    def __init__(self, config: Config) -> None:
         """Store the game config used to start a new game."""
         super().__init__()
         self.config = config
 
-    def on_show_view(self):
+    def on_show_view(self) -> None:
         "Setup the window with a black background."
         self.window.background_color = arcade.color.BLACK
 
-    def on_draw(self):
+    def on_draw(self) -> None:
         "Write the menu."
         self.clear()
         scale = ui_scale(self.window)
@@ -28,11 +28,16 @@ class MenuView(arcade.View):
         cy = self.window.height / 2
         font_size = int(20 * scale)
 
-        arcade.draw_text("PAC-MAN", cx, cy + 60 * scale,
-                         arcade.color.YELLOW, int(64 * scale), anchor_x="center", bold=True)
-        arcade.draw_text("Push SPACE to play",
-                         cx, cy - 20 * scale,
-                         arcade.color.WHITE, font_size, anchor_x="center")
+        arcade.draw_text(
+            "PAC-MAN", cx, cy + 60 * scale,
+            arcade.color.YELLOW, int(64 * scale),
+            anchor_x="center", bold=True
+        )
+        arcade.draw_text(
+            "Push SPACE to play",
+            cx, cy - 20 * scale,
+            arcade.color.WHITE, font_size, anchor_x="center"
+        )
 
         # Highscores display
         arcade.draw_text("HIGHSCORES :",
@@ -50,10 +55,12 @@ class MenuView(arcade.View):
         else:
             for i, entry in enumerate(highscores):
 
-                arcade.draw_text(f"{i+1}. {entry['player_name']} :"
-                                 f" {entry['score']} pts",
-                                 cx_scores, cy_score,
-                                 arcade.color.WHITE, font_size, anchor_x="center")
+                arcade.draw_text(
+                    f"{i+1}. {entry['player_name']} :"
+                    f" {entry['score']} pts",
+                    cx_scores, cy_score,
+                    arcade.color.WHITE, font_size, anchor_x="center"
+                )
                 cy_score -= 40 * scale
 
         # Commands display
@@ -73,7 +80,7 @@ class MenuView(arcade.View):
                          multiline=True,
                          width=int(1000 * scale))
 
-    def on_key_press(self, key, modifiers):
+    def on_key_press(self, key: int, modifiers: int) -> None:
         """Start to play with SPACE, leave fullscreen with F,
             and close the window with ESCAPE."""
         if key == arcade.key.SPACE:

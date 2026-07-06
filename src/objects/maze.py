@@ -59,8 +59,8 @@ class Maze:
         self.score = score
         self.lives = lives
         # pacgums in the back layer, characters (ghosts + player) on top
-        self.sprites = arcade.SpriteList()
-        self.character_sprites = arcade.SpriteList()
+        self.sprites: arcade.SpriteList = arcade.SpriteList()
+        self.character_sprites: arcade.SpriteList = arcade.SpriteList()
 
         # initialize maze
         for y, line in enumerate(maze):
@@ -116,7 +116,7 @@ class Maze:
 
         self.ghosts: List[Ghost] = []
         for i, (x, y) in enumerate(ghost_coordinates):
-            ghost = Ghost(i, x, y, self)
+            ghost: Ghost = Ghost(i, x, y, self)
             ghost.point = self.config.points_per_ghost
             self.ghosts.append(ghost)
             self.maze[y][x].ghost = True

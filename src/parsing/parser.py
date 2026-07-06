@@ -13,7 +13,7 @@ class Colors(Enum):
     GREEN = "\033[0;32m"
     RESET = "\033[0m"
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return the raw code so the enum prints as its color."""
         return self.value
 
@@ -66,7 +66,7 @@ class Config(BaseModel):
                     if validated_val < 0:
                         raise ValueError("needs to be a positive integer")
                 else:
-                    validated_val = str(raw_value)
+                    validated_val_str = str(raw_value)
 
                 # Specific range validations
                 if (
@@ -83,7 +83,7 @@ class Config(BaseModel):
                     raise ValueError("maximum time per level is 150 seconds")
                 if (
                     field_name == 'highscore_filename'
-                    and not validated_val.endswith('.json')
+                    and not validated_val_str.endswith('.json')
                 ):
                     raise ValueError("must be a valid JSON file name")
                 if (
@@ -98,11 +98,14 @@ class Config(BaseModel):
                     raise ValueError("maximum lives of player is 10")
                 if (
                     field_name == 'theme'
-                    and validated_val not in themes
+                    and validated_val_str not in themes
                 ):
                     raise ValueError(f"must be {', '.join(themes)}")
 
-                clean_data[field_name] = validated_val
+                if field_info.annotation is int:
+                    clean_data[field_name] = validated_val
+                else:
+                    clean_data[field_name] = validated_val_str
 
             except Exception as e:
                 # Custom clean error parsing messages
@@ -114,7 +117,7 @@ class Config(BaseModel):
         return clean_data
 
     @model_validator(mode='after')
-    def validate_points(self) -> Dict[str, Any]:
+    def validate_points(self) -> "Config":
         """Check point values and hierarchy, reset to defaults if invalid."""
         # check if points are in range
         if (

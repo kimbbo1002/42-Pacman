@@ -37,17 +37,17 @@ class GameView(arcade.View):
         self.level = level
         self.score = score
         self.cheat_mode = cheat_mode
-        self.time_passed = 0
+        self.time_passed = 0.0
         self.ghost_speed = 0.5
         self.lives = lives
         self.remaining_time = config.level_max_time
         self.remaining_time_stock = 0.0
-        self.time_before_respawn = 0
+        self.time_before_respawn = 0.0
         self.pause = False
         self.pause_start = 0.0
         arcade.resources.load_kenney_fonts()
 
-    def setup(self, generator: MazeGenerator):
+    def setup(self, generator: MazeGenerator) -> None:
         """Build the maze and place a pacgum in every cell."""
         maze = generator.maze
         self.maze = Maze(maze, self.config, self.score, self.lives)
@@ -55,7 +55,7 @@ class GameView(arcade.View):
         self.player = self.maze.player
         self.player.cheat_mode = self.cheat_mode
 
-    def grid_geometry(self):
+    def grid_geometry(self) -> tuple[int, float, float]:
         """Return the cell size and where to start drawing the maze."""
         w = self.window.width
         h = self.window.height
@@ -71,7 +71,7 @@ class GameView(arcade.View):
         return cell_size, offset_x, maze_top
 
     def cell_center(self, row: int, col: int, cell_size: int,
-                    offset_x: float, maze_top: float):
+                    offset_x: float, maze_top: float) -> tuple[float, float]:
         """Return the screen point at the middle of a cell."""
         cx = offset_x + col * cell_size + cell_size / 2
         cy = maze_top - row * cell_size - cell_size / 2
@@ -95,7 +95,7 @@ class GameView(arcade.View):
             theme_scale = 0.8
         scale = theme_scale * scale_ui
         spacing = 100 * scale_ui
-        lives_list = arcade.SpriteList()
+        lives_list: arcade.SpriteList = arcade.SpriteList()
         life_x = info_x + 50 * scale_ui
         life_y = info_y - 80 * scale_ui
         if self.config.lives <= 5:
@@ -293,7 +293,7 @@ class GameView(arcade.View):
             font_name="Kenney Rocket Square"
         )
 
-    def on_draw(self):
+    def on_draw(self) -> None:
         """Draw the walls and the pacgums on the screen."""
         self.clear()
 
@@ -351,7 +351,7 @@ class GameView(arcade.View):
         self.display_info_right()
         self.display_info_left()
 
-    def on_key_press(self, key: int, modifiers):
+    def on_key_press(self, key: int, modifiers: int) -> None:
         """Toggle fullscreen with F, go back to menu with Escape."""
         from .menu_view import MenuView
         if key == arcade.key.ESCAPE:
@@ -405,7 +405,7 @@ class GameView(arcade.View):
             elif key == arcade.key.RIGHT:
                 self.player.move_right = True
 
-    def on_key_release(self, key: int, modifiers):
+    def on_key_release(self, key: int, modifiers: int) -> None:
         if not self.pause:
             if key == arcade.key.UP:
                 self.player.move_up = False
@@ -416,7 +416,7 @@ class GameView(arcade.View):
             elif key == arcade.key.RIGHT:
                 self.player.move_right = False
 
-    def resume(self):
+    def resume(self) -> None:
         """Resume the game after a pause.
 
         Shift every wall-clock timer by the paused duration so nothing
@@ -429,7 +429,7 @@ class GameView(arcade.View):
         self.pause = False
         self.window.show_view(self)
 
-    def on_update(self, delta_time: float):
+    def on_update(self, delta_time: float) -> None:
         """Run one game step: end super_mode when it times out, respawn the
             player after its delay, set the background, and move the ghosts
             at their own speed."""

@@ -30,13 +30,15 @@ class WinView(arcade.View):
         self.v_box.add(self.label)
 
         self.input_field = InputName(
-            width=box_width, height=int(50 * scale), text="", text_color=arcade.color.BLACK,
+            width=box_width, height=int(50 * scale),
+            text="", text_color=arcade.color.BLACK,
             font_size=int(25 * scale)
         )
 
         input_bg = self.input_field.with_background(
             texture=arcade.texture.Texture.create_empty(
-                name="input_bg", size=(box_width, int(40 * scale)), color=arcade.color.WHITE
+                name="input_bg", size=(box_width, int(40 * scale)),
+                color=arcade.color.WHITE
             )
         )
         self.v_box.add(input_bg)
@@ -51,7 +53,7 @@ class WinView(arcade.View):
 
         self.manager.add(anchor_layout)
 
-    def on_show_view(self):
+    def on_show_view(self) -> None:
         "Setup the window with a black background."
         self.manager.enable()
         self.window.background_color = arcade.color.BLACK
@@ -59,21 +61,27 @@ class WinView(arcade.View):
         self.cx = self.window.width / 2
         self.cy = self.window.height / 2
 
-    def on_draw(self):
+    def on_draw(self) -> None:
         "Write the win message and the score."
         self.clear()
         scale = ui_scale(self.window)
 
-        arcade.draw_text("CONGRATULATIONS, YOU WIN !", self.cx, self.cy + 80 * scale,
-                         arcade.color.GREEN, int(50 * scale), anchor_x="center")
-        arcade.draw_text(f"Your score : {self.score}", self.cx, self.cy - 20 * scale,
-                         arcade.color.BLUE_VIOLET, int(50 * scale), anchor_x="center")
+        arcade.draw_text(
+            "CONGRATULATIONS, YOU WIN !", self.cx, self.cy + 80 * scale,
+            arcade.color.GREEN, int(50 * scale), anchor_x="center"
+        )
+        arcade.draw_text(
+            f"Your score : {self.score}", self.cx, self.cy - 20 * scale,
+            arcade.color.BLUE_VIOLET, int(50 * scale), anchor_x="center"
+        )
         self.manager.draw()
-        arcade.draw_text("Push ENTER to save and return to menu",
-                         self.cx, self.cy - 500 * scale,
-                         arcade.color.WHITE, int(20 * scale), anchor_x="center")
+        arcade.draw_text(
+            "Push ENTER to save and return to menu",
+            self.cx, self.cy - 500 * scale,
+            arcade.color.WHITE, int(20 * scale), anchor_x="center"
+        )
 
-    def on_key_press(self, key, modifiers):
+    def on_key_press(self, key: int, modifiers: int) -> None:
         """Return to menu with SPACE, leave fullscreen with F,
             and close the window with ESCAPE."""
         if key == arcade.key.ENTER:

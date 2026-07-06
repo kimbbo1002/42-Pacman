@@ -3,8 +3,8 @@ import math
 import numpy as np
 from collections import deque
 from .player import Player
-from .maze import Cell
-from typing import List
+from .maze import Cell, Maze
+from typing import List, Dict
 import time
 import arcade
 
@@ -20,15 +20,14 @@ RESPAWN_DELAY = 5.0  # seconds before an eaten ghost reappears at its spawn
 class Ghost:
     """An enemy that moves through the maze to catch the player."""
 
-    def __init__(self, id: int, x: int, y: int, maze: List[List[Cell]]
-                 ) -> None:
+    def __init__(self, id: int, x: int, y: int, maze: Maze) -> None:
         """Create a ghost at (x, y) and remember it as its spawn."""
         self.id = id
         self.x = x
         self.y = y
         self.spawn_x = x
         self.spawn_y = y
-        self.history = deque(maxlen=3)
+        self.history: deque = deque(maxlen=3)
         self.point = 0
         self.is_closest = False
         self.dead = False
@@ -122,7 +121,7 @@ class Ghost:
             self.y = next_cell.y
             next_cell.ghost = True
 
-    def find_shortest_move(self, player: Player) -> Cell:
+    def find_shortest_move(self, player: Player) -> Cell | None:
         """Return the next cell on the shortest path to the player (BFS)."""
         start_x, start_y = self.x, self.y
         target = (player.x, player.y)
@@ -135,7 +134,7 @@ class Ghost:
             return start_cell
 
         queue = deque([(start_x, start_y)])
-        path = {start_cell: None}
+        path: Dict[Cell | None, Cell | None] = {start_cell: None}
 
         directions = [(0, 1), (0, -1), (-1, 0), (1, 0)]
         found = False
@@ -166,7 +165,7 @@ class Ghost:
 
         if not found or target_cell not in path:
             return start_cell
-        curr = target_cell
+        curr: Cell | None = target_cell
         while path[curr] != start_cell:
             curr = path[curr]
 
@@ -175,10 +174,11 @@ class Ghost:
     def chase_move(self, player: Player) -> None:
         """Take one step toward the player."""
         next_cell = self.find_shortest_move(player)
-        self.maze.maze[self.y][self.x].ghost = False
-        self.x = next_cell.x
-        self.y = next_cell.y
-        next_cell.ghost = True
+        if next_cell:
+            self.maze.maze[self.y][self.x].ghost = False
+            self.x = next_cell.x
+            self.y = next_cell.y
+            next_cell.ghost = True
 
     @staticmethod
     def calculate_closest(player: Player, ghosts: List["Ghost"]) -> None:
@@ -222,7 +222,7 @@ class Ghost:
             distance = abs(cell.x - player.x) + abs(cell.y - player.y)
             distances[cell] = distance
 
-        return max(distances, key=distances.get)
+        return max(distances, key=lambda cell: distances[cell])
 
     def escape_move(self, player: Player) -> None:
         """Take one step away from the player (used in super_mode)."""
