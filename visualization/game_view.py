@@ -239,7 +239,7 @@ class GameView(arcade.View):
         arcade.draw_text(
             "> Normal Mode :",
             info_x,
-            y_title - 100 * scalegi,
+            y_title - 100 * scale,
             arcade.color.YELLOW,
             font_size,
             font_name="Kenney Rocket Square"
@@ -247,7 +247,7 @@ class GameView(arcade.View):
         arcade.draw_text(
             "- Move : (Key Arrows)",
             info_x,
-            y_title - 150 * scalegi,
+            y_title - 150 * scale,
             arcade.color.YELLOW,
             font_size,
             font_name="Kenney Rocket Square"
@@ -255,7 +255,7 @@ class GameView(arcade.View):
         arcade.draw_text(
             "- Pause : P",
             info_x,
-            y_title - 200 * scalegi,
+            y_title - 200 * scale,
             arcade.color.YELLOW,
             font_size,
             font_name="Kenney Rocket Square"
@@ -263,7 +263,7 @@ class GameView(arcade.View):
         arcade.draw_text(
             "> Cheat Mode :",
             info_x,
-            y_title - 300 * scalegi,
+            y_title - 300 * scale,
             arcade.color.YELLOW,
             font_size,
             font_name="Kenney Rocket Square"
@@ -271,7 +271,7 @@ class GameView(arcade.View):
         arcade.draw_text(
             "- Activate : C",
             info_x,
-            y_title - 350 * scalegi,
+            y_title - 350 * scale,
             arcade.color.YELLOW,
             font_size,
             font_name="Kenney Rocket Square"
@@ -279,7 +279,7 @@ class GameView(arcade.View):
         arcade.draw_text(
             "- Freeze Ghosts : G",
             info_x,
-            y_title - 400 * scalegi,
+            y_title - 400 * scale,
             arcade.color.YELLOW,
             font_size,
             font_name="Kenney Rocket Square"
@@ -287,7 +287,7 @@ class GameView(arcade.View):
         arcade.draw_text(
             "- Skip Level : N",
             info_x,
-            y_title - 450 * scalegi,
+            y_title - 450 * scale,
             arcade.color.YELLOW,
             font_size,
             font_name="Kenney Rocket Square"
