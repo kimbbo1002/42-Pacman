@@ -18,7 +18,7 @@ GHOST_DOTS = [PACMAN_YELLOW, BLINKY_RED, PINKY_PINK, INKY_CYAN, CLYDE_ORANGE]
 # Medals for the top-3 scores, then white for the rest
 MEDALS = [(255, 215, 0), (192, 192, 192), (205, 127, 50)]
 
-# Each rule line with its own color (continuation lines share the color)
+# Each rule line with its own color
 RULES_LINES = [
     ("** You will spawn in the middle of a maze **", PACMAN_YELLOW),
     ("-> Use the arrows to move through the corridors", INKY_CYAN),

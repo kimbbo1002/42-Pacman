@@ -71,6 +71,16 @@ Point values must also respect the hierarchy `pacgum * 2 ≤ super_pacgum` and `
 | `G`        | Freeze the ghosts (cheat mode only)      |
 | `N`        | Skip to the next level (cheat mode only) |
 
+### Rules
+
+Eat all the Pacgums in the limit time to win the level.
+If a ghost catches you, you lose a life, respawn after 3 seconds, and you have 3 seconds of invincibility. 
+If you eat a super-pacgum, you are invincible and able to eat the ghosts for a short time (fixed on 8 seconds). If you eat a ghost, he will respawn at his corner after 5 seconds.
+Game Over when you run out of lives or time.
+If you complete the level, you move on to the next level.
+When all the levels are completed, you win the game.  
+
+You can save your score and enter your name even if you don´t finish the game.
 
 # Maze generation
 
