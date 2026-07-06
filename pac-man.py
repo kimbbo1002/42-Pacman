@@ -1,5 +1,5 @@
-from parsing import load_config
-from visualization import MenuView
+from src.parsing import load_config
+from src.visualization import MenuView
 import arcade
 
 WINDOW_WIDTH = 1280
