@@ -2,6 +2,7 @@ import arcade
 import arcade.gui
 from parsing import Config
 from objects import Score, InputName
+from .scaler import ui_scale
 
 
 class LoseView(arcade.View):
@@ -13,27 +14,29 @@ class LoseView(arcade.View):
         self.config = config
         self.score = score
         self.manager = arcade.gui.UIManager()
+        scale = ui_scale(self.window)
+        box_width = int(400 * scale)
 
-        self.v_box = arcade.gui.UIBoxLayout(space_between=10)
+        self.v_box = arcade.gui.UIBoxLayout(space_between=10 * scale)
 
         self.label = arcade.gui.UITextArea(
             text="Enter your name :",
-            width=400,
-            height=30,
+            width=box_width,
+            height=int(30 * scale),
             text_color=arcade.color.WHITE,
-            font_size=20,
+            font_size=int(20 * scale),
             font_name="Kenney Rocket"
         )
         self.v_box.add(self.label)
 
         self.input_field = InputName(
-            width=400, height=50, text="", text_color=arcade.color.BLACK,
-            font_size=25
+            width=box_width, height=int(50 * scale), text="", text_color=arcade.color.BLACK,
+            font_size=int(25 * scale)
         )
 
         input_bg = self.input_field.with_background(
             texture=arcade.texture.Texture.create_empty(
-                name="input_bg", size=(400, 50), color=arcade.color.WHITE
+                name="input_bg", size=(box_width, int(50 * scale)), color=arcade.color.WHITE
             )
         )
         self.v_box.add(input_bg)
@@ -43,7 +46,7 @@ class LoseView(arcade.View):
             child=self.v_box,
             anchor_x="center_x",
             anchor_y="center_y",
-            align_y=-120
+            align_y=-120 * scale
         )
 
         self.manager.add(anchor_layout)
@@ -59,19 +62,20 @@ class LoseView(arcade.View):
     def on_draw(self):
         "Write the lose message and the score."
         self.clear()
+        scale = ui_scale(self.window)
 
         arcade.draw_text("The ghosts have gotten "
-                         "the better of you", self.cx, self.cy + 190,
-                         arcade.color.RED_DEVIL, 40, anchor_x="center")
-        arcade.draw_text("YOU LOST", self.cx, self.cy + 100,
-                         arcade.color.RED_DEVIL, 60,
+                         "the better of you", self.cx, self.cy + 190 * scale,
+                         arcade.color.RED_DEVIL, int(40 * scale), anchor_x="center")
+        arcade.draw_text("YOU LOST", self.cx, self.cy + 100 * scale,
+                         arcade.color.RED_DEVIL, int(60 * scale),
                          anchor_x="center", bold=True)
-        arcade.draw_text(f"Your score : {self.score}", self.cx, self.cy + 20,
-                         arcade.color.BLUE_VIOLET, 50, anchor_x="center")
+        arcade.draw_text(f"Your score : {self.score}", self.cx, self.cy + 20 * scale,
+                         arcade.color.BLUE_VIOLET, int(50 * scale), anchor_x="center")
         self.manager.draw()
         arcade.draw_text("Push ENTER to save and return to menu",
-                         self.cx, self.cy - 500,
-                         arcade.color.WHITE, 20, anchor_x="center")
+                         self.cx, self.cy - 500 * scale,
+                         arcade.color.WHITE, int(20 * scale), anchor_x="center")
 
     def on_key_press(self, key, modifiers):
         """Return to menu with SPACE, leave fullscreen with F,

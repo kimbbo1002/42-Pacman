@@ -3,6 +3,7 @@ from .game_view import GameView
 from parsing import Config
 import arcade
 from objects import Score
+from .scaler import ui_scale
 
 
 class MenuView(arcade.View):
@@ -20,44 +21,46 @@ class MenuView(arcade.View):
     def on_draw(self):
         "Write the menu."
         self.clear()
+        scale = ui_scale(self.window)
         cx = self.window.width / 2
-        cx_scores = cx - 500
-        cx_rules = cx + 500
+        cx_scores = cx - 500 * scale
+        cx_rules = cx + 500 * scale
         cy = self.window.height / 2
+        font_size = int(20 * scale)
 
-        arcade.draw_text("PAC-MAN", cx, cy + 60,
-                         arcade.color.YELLOW, 64, anchor_x="center", bold=True)
+        arcade.draw_text("PAC-MAN", cx, cy + 60 * scale,
+                         arcade.color.YELLOW, int(64 * scale), anchor_x="center", bold=True)
         arcade.draw_text("Push SPACE to play",
-                         cx, cy - 20,
-                         arcade.color.WHITE, 20, anchor_x="center")
+                         cx, cy - 20 * scale,
+                         arcade.color.WHITE, font_size, anchor_x="center")
 
         # Highscores display
         arcade.draw_text("HIGHSCORES :",
-                         cx_scores, cy - 200,
-                         arcade.color.BLUE_GRAY, 20, anchor_x="center",
+                         cx_scores, cy - 200 * scale,
+                         arcade.color.BLUE_GRAY, font_size, anchor_x="center",
                          bold=True)
 
         highscores = Score.load_scores(self.config.highscore_filename)
 
-        cy_score = cy - 250
+        cy_score = cy - 250 * scale
         if highscores == []:
             arcade.draw_text("No scores saved",
                              cx_scores, cy_score,
-                             arcade.color.WHITE, 20, anchor_x="center")
+                             arcade.color.WHITE, font_size, anchor_x="center")
         else:
             for i, entry in enumerate(highscores):
 
                 arcade.draw_text(f"{i+1}. {entry['player_name']} :"
                                  f" {entry['score']} pts",
                                  cx_scores, cy_score,
-                                 arcade.color.WHITE, 20, anchor_x="center")
-                cy_score -= 40
+                                 arcade.color.WHITE, font_size, anchor_x="center")
+                cy_score -= 40 * scale
 
         # Commands display
         arcade.draw_text("COMMANDS AND RULES :",
-                         cx_rules, cy - 200,
-                         arcade.color.BLUE_GRAY, 20, anchor_x="center",
-                         bold=True, width=800)
+                         cx_rules, cy - 200 * scale,
+                         arcade.color.BLUE_GRAY, font_size, anchor_x="center",
+                         bold=True, width=int(800 * scale))
         arcade.draw_text("** You will spawn in the middle of a maze **\n"
                          "-> Use the arrows to move through the corridors\n"
                          "-> Hold an arrow key to move continuously "
@@ -65,10 +68,10 @@ class MenuView(arcade.View):
                          "-> Eat all the Pacgums to win the level\n"
                          "-> If a ghost catches you, you lose a life\n"
                          "-> Game Over when you run out of lives or time",
-                         cx_rules + 170, cy - 250,
-                         arcade.color.WHITE, 20, anchor_x="center",
+                         cx_rules + 170 * scale, cy - 250 * scale,
+                         arcade.color.WHITE, font_size, anchor_x="center",
                          multiline=True,
-                         width=1000)
+                         width=int(1000 * scale))
 
     def on_key_press(self, key, modifiers):
         """Start to play with SPACE, leave fullscreen with F,

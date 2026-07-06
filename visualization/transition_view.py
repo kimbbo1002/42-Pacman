@@ -3,6 +3,7 @@ from .game_view import GameView
 from parsing import Config
 from mazegenerator import MazeGenerator
 import random
+from .scaler import ui_scale
 
 
 class TransitionView(arcade.View):
@@ -25,22 +26,23 @@ class TransitionView(arcade.View):
     def on_draw(self):
         "Write the next level, the score, and the remaining lives."
         self.clear()
+        scale = ui_scale(self.window)
         cx = self.window.width / 2
         cy = self.window.height / 2
 
-        arcade.draw_text("You win!", cx, cy + 180,
-                         arcade.color.GREEN, 50, anchor_x="center", bold=True)
+        arcade.draw_text("You win!", cx, cy + 180 * scale,
+                         arcade.color.GREEN, int(50 * scale), anchor_x="center", bold=True)
 
-        arcade.draw_text(f"LEVEL {self.next_level}", cx, cy + 60,
-                         arcade.color.YELLOW, 64, anchor_x="center", bold=True)
+        arcade.draw_text(f"LEVEL {self.next_level}", cx, cy + 60 * scale,
+                         arcade.color.YELLOW, int(64 * scale), anchor_x="center", bold=True)
         arcade.draw_text("Push SPACE to continue",
-                         cx, cy - 20,
-                         arcade.color.WHITE, 20, anchor_x="center")
-        arcade.draw_text(f"Your score : {self.score}", cx, cy - 200,
-                         arcade.color.BLUE_VIOLET, 50, anchor_x="center")
+                         cx, cy - 20 * scale,
+                         arcade.color.WHITE, int(20 * scale), anchor_x="center")
+        arcade.draw_text(f"Your score : {self.score}", cx, cy - 200 * scale,
+                         arcade.color.BLUE_VIOLET, int(50 * scale), anchor_x="center")
         arcade.draw_text(f"Remaining lives : {self.remaining_lives}",
-                         cx, cy - 300,
-                         arcade.color.BLUE_VIOLET, 50, anchor_x="center")
+                         cx, cy - 300 * scale,
+                         arcade.color.BLUE_VIOLET, int(50 * scale), anchor_x="center")
 
     def on_key_press(self, key, modifiers):
         """Start the next level with SPACE, leave fullscreen with F,
