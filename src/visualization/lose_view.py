@@ -88,14 +88,14 @@ class LoseView(arcade.View):
             arcade.color.WHITE, int(20 * scale), anchor_x="center"
         )
 
-    def on_key_press(self, key: int, modifiers: int) -> None:
+    def on_key_press(self, key: int, _: int) -> None:
         """Return to menu with SPACE, leave fullscreen with F,
             and close the window with ESCAPE."""
         if key == arcade.key.ENTER:
             from .menu_view import MenuView
 
             score = Score(self.input_field.text.strip(), self.score)
-            score.save()
+            score.save(self.config.highscore_filename)
 
             menu = MenuView(self.config)
             self.window.show_view(menu)

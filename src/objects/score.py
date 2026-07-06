@@ -16,7 +16,7 @@ class Score:
         return {"player_name": self.player_name, "score": self.score}
 
     @staticmethod
-    def load_scores(filename: str = "highscores.json") -> list[Dict[str, Any]]:
+    def load_scores(filename: str) -> list[Dict[str, Any]]:
         """Read the JSON file and return the list of scores.
 
         Raise a ValueError if the file content is not a list or if any
@@ -58,7 +58,7 @@ class Score:
 
         return data
 
-    def save(self, filename: str = "highscores.json") -> None:
+    def save(self, filename: str) -> None:
         """Save the score in a sorted order in the JSON file with
             the top 10 highscores."""
 

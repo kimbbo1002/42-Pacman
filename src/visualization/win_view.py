@@ -81,7 +81,7 @@ class WinView(arcade.View):
             arcade.color.WHITE, int(20 * scale), anchor_x="center"
         )
 
-    def on_key_press(self, key: int, modifiers: int) -> None:
+    def on_key_press(self, key: int, _: int) -> None:
         """Return to menu with SPACE, leave fullscreen with F,
             and close the window with ESCAPE."""
         if key == arcade.key.ENTER:

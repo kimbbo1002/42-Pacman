@@ -360,7 +360,7 @@ class GameView(arcade.View):
         self.display_info_right()
         self.display_info_left()
 
-    def on_key_press(self, key: int, modifiers: int) -> None:
+    def on_key_press(self, key: int, _: int) -> None:
         """Toggle fullscreen with F, go back to menu with Escape."""
         from .menu_view import MenuView
         if key == arcade.key.ESCAPE:
@@ -410,7 +410,7 @@ class GameView(arcade.View):
             elif key == arcade.key.RIGHT:
                 self.player.move_right = True
 
-    def on_key_release(self, key: int, modifiers: int) -> None:
+    def on_key_release(self, key: int, _: int) -> None:
         if not self.pause:
             if key == arcade.key.UP:
                 self.player.move_up = False

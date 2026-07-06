@@ -130,7 +130,7 @@ class MenuView(arcade.View):
         arcade.draw_text("Press ESCAPE to exit", cx, cy_exit,
                          arcade.color.WHITE, font_size, anchor_x="center")
 
-    def on_key_press(self, key: int, modifiers: int) -> None:
+    def on_key_press(self, key: int, _: int) -> None:
         """Start to play with SPACE, leave fullscreen with F,
             and close the window with ESCAPE."""
         if key == arcade.key.SPACE:

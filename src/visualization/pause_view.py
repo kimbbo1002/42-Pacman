@@ -53,7 +53,7 @@ class PauseView(arcade.View):
             bold=True
         )
 
-    def on_key_press(self, key: int, modifiers: int) -> None:
+    def on_key_press(self, key: int, _: int) -> None:
         """Resume the game with SPACE, go back to the menu with ESCAPE."""
         if key == arcade.key.SPACE:
             self.game_view.resume()
