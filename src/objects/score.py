@@ -88,8 +88,10 @@ class InputName(arcade.gui.UIInputText):
             if not event.text:
                 return True
 
-        handled = super().on_event(event)
-        if len(self.text) > self.MAX_LENGTH:
-            self.text = self.text[:self.MAX_LENGTH]
-            self.caret.position = len(self.text)
+        handled: bool | None = super().on_event(event)
+        text: str = getattr(self, "text")
+        if len(text) > self.MAX_LENGTH:
+            truncated = text[:self.MAX_LENGTH]
+            self.text = truncated
+            self.caret.position = len(truncated)
         return handled

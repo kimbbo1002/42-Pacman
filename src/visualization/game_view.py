@@ -357,11 +357,7 @@ class GameView(arcade.View):
         """Toggle fullscreen with F, go back to menu with Escape."""
         from .menu_view import MenuView
         if key == arcade.key.ESCAPE:
-            self.window.show_view(MenuView(Config(
-                width=self.cols,
-                height=self.rows,
-                seed=42,
-            )))
+            self.window.show_view(MenuView(self.config))
 
         elif key == arcade.key.C:
             if self.player.cheat_mode is False:
