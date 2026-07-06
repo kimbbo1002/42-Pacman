@@ -1,4 +1,5 @@
 from src.parsing import Config
+from ..objects import Ghost
 from mazegenerator import MazeGenerator
 import arcade
 from src.objects import Maze
@@ -38,7 +39,8 @@ class GameView(arcade.View):
         self.score = score
         self.cheat_mode = cheat_mode
         self.time_passed = 0.0
-        self.ghost_speed = 0.5
+        self.ghost_speed = Ghost.scale_speed(self.level, self.config.level)
+        print(self.ghost_speed)
         self.lives = lives
         self.remaining_time = config.level_max_time
         self.remaining_time_stock = 0.0
