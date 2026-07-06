@@ -1,13 +1,13 @@
 # 01 — Project Analysis
 
-## 1. Goal
+## Goal
 
 Build a complete and playable Pac-Man in Python: a player navigates a
 procedurally generated maze, eats all the Pacgums to clear a level while
 avoiding ghosts, with lives, a timer, multiple levels, a persistent highscore
 board and a fully configurable ruleset.
 
-## 2. Requirements stapes of implementation
+## Requirements stapes of implementation
 
 | # | Requirement | Where it lives |
 | - | ----------- | -------------- |
@@ -22,7 +22,7 @@ board and a fully configurable ruleset.
 | R9 | cheat mode | `Player`, `GameView` |
 | R10 | Swappable visual themes | `src/objects/assets.py`, `src/resources/` |
 
-## 3. Technical choices & justification
+## Technical choices & justification
 
 | Decision | Alternatives considered | Why we chose it |
 | -------- | ----------------------- | --------------- |
