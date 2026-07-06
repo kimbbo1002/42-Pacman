@@ -10,18 +10,18 @@ class PauseView(arcade.View):
     to go back to the main menu.
     """
 
-    def __init__(self, game_view: GameView):
+    def __init__(self, game_view: GameView) -> None:
         """Store the paused game view so it can be resumed later."""
         super().__init__()
         self.game_view = game_view
 
-    def on_show_view(self):
+    def on_show_view(self) -> None:
         "Setup the window with a black background."
         self.window.background_color = arcade.color.BLACK
         self.cx = self.window.width / 2
         self.cy = self.window.height / 2
 
-    def on_draw(self):
+    def on_draw(self) -> None:
         "Write the menu."
         self.clear()
         scale = ui_scale(self.window)
@@ -53,7 +53,7 @@ class PauseView(arcade.View):
             bold=True
         )
 
-    def on_key_press(self, key, modifiers):
+    def on_key_press(self, key: int, modifiers: int) -> None:
         """Resume the game with SPACE, go back to the menu with ESCAPE."""
         if key == arcade.key.SPACE:
             self.game_view.resume()

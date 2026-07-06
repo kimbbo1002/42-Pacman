@@ -27,9 +27,9 @@ class Player:
         self.dead = False
         self.dead_since = 0.0
         self.respawning = False
-        self.respawning_start = 0
+        self.respawning_start = 0.0
         self.super_mode = False
-        self.super_mode_start = 0
+        self.super_mode_start = 0.0
         self.cheat_mode = False
         self.move_up = False
         self.move_down = False
@@ -54,14 +54,14 @@ class Player:
         self.maze.character_sprites.append(self.sprite_super)
         self.maze.character_sprites.append(self.sprite_cheat)
 
-    def die(self):
+    def die(self) -> None:
         """Kill the player: lose one life and clear its cell."""
         self.dead = True
         self.dead_since = time.time()
         self.lives -= 1
         self.maze.maze[self.y][self.x].player = False
 
-    def respawn(self):
+    def respawn(self) -> None:
         """Put the player back on its starting cell."""
         self.x = self.spawn_x
         self.y = self.spawn_y

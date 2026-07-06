@@ -9,8 +9,11 @@ from .scaler import ui_scale
 class TransitionView(arcade.View):
     """Screen of transition between two levels."""
 
-    def __init__(self, config: Config, score: int,
-                 lives: int, next_level: int, cheat_mode: bool = False):
+    def __init__(
+            self, config: Config, score: int,
+            lives: int, next_level: int,
+            cheat_mode: bool = False
+    ) -> None:
         """Store the score, remaining lives and the level to play next."""
         super().__init__()
         self.config = config
@@ -19,11 +22,11 @@ class TransitionView(arcade.View):
         self.next_level = next_level
         self.cheat_mode = cheat_mode
 
-    def on_show_view(self):
+    def on_show_view(self) -> None:
         "Setup the window with a black background."
         self.window.background_color = arcade.color.BLACK
 
-    def on_draw(self):
+    def on_draw(self) -> None:
         "Write the next level, the score, and the remaining lives."
         self.clear()
         scale = ui_scale(self.window)
@@ -55,7 +58,7 @@ class TransitionView(arcade.View):
             arcade.color.BLUE_VIOLET, int(50 * scale), anchor_x="center"
         )
 
-    def on_key_press(self, key, modifiers):
+    def on_key_press(self, key: int, modifiers: int) -> None:
         """Start the next level with SPACE, leave fullscreen with F,
             and close the window with ESCAPE."""
         if key == arcade.key.SPACE:

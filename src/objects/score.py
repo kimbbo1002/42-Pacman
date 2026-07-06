@@ -1,5 +1,6 @@
 import json
 import arcade.gui
+from typing import Dict, Any
 
 
 class Score:
@@ -8,14 +9,14 @@ class Score:
         self.player_name = player_name
         self.score = score
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, Any]:
         """Convert the objet Score to dictionnary with JSON compatibility."""
         if self.player_name == "":
             self.player_name = "Anonymous"
         return {"player_name": self.player_name, "score": self.score}
 
     @staticmethod
-    def load_scores(filename="highscores.json"):
+    def load_scores(filename: str = "highscores.json") -> list[Dict[str, Any]]:
         """Read the JSON file and return the list of scores.
 
         Raise a ValueError if the file content is not a list or if any
@@ -57,7 +58,7 @@ class Score:
 
         return data
 
-    def save(self, filename="highscores.json"):
+    def save(self, filename: str = "highscores.json") -> None:
         """Save the score in a sorted order in the JSON file with
             the top 10 highscores."""
 
@@ -77,7 +78,7 @@ class InputName(arcade.gui.UIInputText):
 
     MAX_LENGTH = 10
 
-    def on_event(self, event):
+    def on_event(self, event: arcade.gui.UIEvent) -> bool | None:
         """Only allow alphanumeric characters and spaces, and never let
         the text exceed MAX_LENGTH characters."""
         if isinstance(event, arcade.gui.UITextInputEvent):

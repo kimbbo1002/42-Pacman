@@ -8,7 +8,7 @@ from .scaler import ui_scale
 class LoseView(arcade.View):
     """Screen of lose."""
 
-    def __init__(self, config: Config, score: int):
+    def __init__(self, config: Config, score: int) -> None:
         """Store the config and the final score to display."""
         super().__init__()
         self.config = config
@@ -53,7 +53,7 @@ class LoseView(arcade.View):
 
         self.manager.add(anchor_layout)
 
-    def on_show_view(self):
+    def on_show_view(self) -> None:
         "Setup the window with a black background."
         self.manager.enable()
         self.window.background_color = arcade.color.BLACK
@@ -61,7 +61,7 @@ class LoseView(arcade.View):
         self.cx = self.window.width / 2
         self.cy = self.window.height / 2
 
-    def on_draw(self):
+    def on_draw(self) -> None:
         "Write the lose message and the score."
         self.clear()
         scale = ui_scale(self.window)
@@ -88,7 +88,7 @@ class LoseView(arcade.View):
             arcade.color.WHITE, int(20 * scale), anchor_x="center"
         )
 
-    def on_key_press(self, key, modifiers):
+    def on_key_press(self, key: int, modifiers: int) -> None:
         """Return to menu with SPACE, leave fullscreen with F,
             and close the window with ESCAPE."""
         if key == arcade.key.ENTER:
