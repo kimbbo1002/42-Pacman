@@ -442,7 +442,7 @@ class GameView(arcade.View):
         if not self.pause:
             now = time.time()
 
-            if self.player.move_time > 0.08:
+            if self.player.move_time > 0.06:
                 if self.player.move_up:
                     self.player.move_player(0, -1)
                 elif self.player.move_down:
