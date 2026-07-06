@@ -80,7 +80,8 @@ class Config(BaseModel):
                     field_name == 'level_max_time'
                     and not 10 <= validated_val <= 180
                 ):
-                    raise ValueError("time per level must be between 10 and 180 seconds")
+                    raise ValueError("time per level must be between 10 and "
+                                     "180 seconds")
                 if (
                     field_name == 'highscore_filename'
                     and not validated_val_str.endswith('.json')
