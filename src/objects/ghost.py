@@ -40,6 +40,17 @@ class Ghost:
         self.sprite = arcade.BasicSprite(texture, scale=0.6)
         self.maze.character_sprites.append(self.sprite)
 
+    @staticmethod
+    def scale_speed(
+        curr_level: int, final_level: int, min_multiplier: float = 0.5
+    ) -> float:
+        """Return the speed of the ghost, scaled by the current level."""
+        if final_level <= 1:
+            return 1.0
+        progress = (curr_level - 1) / (final_level - 1)
+        progress = max(0.0, min(progress, 1.0))
+        return round(0.8 * (1.0 - progress * (1.0 - min_multiplier)), 2)
+
     def die(self) -> None:
         """Despawn the ghost: clear its cell and start the respawn timer."""
         self.dead = True
