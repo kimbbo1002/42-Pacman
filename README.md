@@ -52,7 +52,10 @@ The game reads all its settings from a JSON config file passed as the only comma
 | `level_max_time`          | Time limit per level (s)   | ≤ 150                                   | 90                 |
 | `theme`                   | Visual theme               | `pacman`, `stardew_valley`, `minecraft` | `pacman`           |
 
-Point values must also respect the hierarchy `pacgum * 2 ≤ super_pacgum` and `super_pacgum * 2 ≤ ghost`. If they don't, the three point values are reset to their defaults (`10` / `50` / `200`). If the whole config file is missing or corrupted, all settings fall back to their defaults.
+Point values must also respect the hierarchy `pacgum * 2 ≤ super_pacgum` and `super_pacgum * 2 ≤ ghost`. If they don't, the three point values are reset to their defaults (`10` / `50` / `200`).
+
+If the whole config file is missing or corrupted, all settings fall back to their defaults.  
+If a line has an unrecognize key, it is ignored. If a key is duplicate, it is ignored and a value by default is defined.
 
 ## Controls
 
