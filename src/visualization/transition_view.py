@@ -40,7 +40,8 @@ class TransitionView(arcade.View):
         )
 
         arcade.draw_text(
-            f"LEVEL {self.next_level}", cx, cy + 60 * scale,
+            f"LEVEL {self.next_level} / {self.config.level}",
+            cx, cy + 60 * scale,
             arcade.color.YELLOW, int(64 * scale), anchor_x="center", bold=True
         )
         arcade.draw_text(

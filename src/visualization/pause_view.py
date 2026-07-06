@@ -32,7 +32,7 @@ class PauseView(arcade.View):
             anchor_x="center", bold=True
         )
         arcade.draw_text(
-            f"Level {self.game_view.level}",
+            f"Level {self.game_view.level} / {self.game_view.config.level}",
             self.cx, self.cy - 20 * scale,
             arcade.color.YELLOW, int(30 * scale), anchor_x="center"
         )
