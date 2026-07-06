@@ -77,7 +77,7 @@ Point values must also respect the hierarchy `pacgum * 2 ≤ super_pacgum` and `
 Download the .whl from the intranet page of the project and put it on the root of the repository, rename it `mazegenerator-2.0.2-py3-none-any.whl`.
 Then you can use the Makefile to run the program.
 
-The `MazeGenerator`, accomplished by another group of students from 42 school, is invoked with the configured `width`, `height` and `seed` to build a non-perfect maze (with loops) at the start of each game, so a given seed always produces the same maze. For the first level, the maze is always generated with the seed given in the configuration file. For all others levels, the seed used is random.
+The `MazeGenerator`, is invoked with the configured `width`, `height` and `seed` to build a non-perfect maze (with loops) at the start of each game, so a given seed always produces the same maze. For the first level, the maze is always generated with the seed given in the configuration file. For all others levels, the seed used is random.
 
 
 # Highscore
