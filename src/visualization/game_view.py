@@ -156,7 +156,7 @@ class GameView(arcade.View):
 
         # display level
         arcade.draw_text(
-            f"Level {self.level}",
+            f"Level {self.level} / {self.config.level}",
             info_x,
             info_y_level,
             arcade.color.YELLOW,
