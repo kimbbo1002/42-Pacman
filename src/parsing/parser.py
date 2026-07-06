@@ -69,6 +69,11 @@ class Config(BaseModel):
 
             try:
                 if field_info.annotation is int:
+                    if isinstance(raw_value, float):
+                        print(
+                            f"\n{Colors.YELLOW}WARNING(CONFIG):\n{Colors.RESET}"
+                            f"Field '{field_name}' is a float, converting to int"
+                        )
                     validated_val = int(raw_value)
                     if validated_val <= 0:
                         raise ValueError("needs to be greater than 0")
