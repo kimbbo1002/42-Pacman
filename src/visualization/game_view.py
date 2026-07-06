@@ -17,8 +17,10 @@ MARGIN = 50
 
 PLAYER_CELL_FRACTION = 0.8
 GHOST_CELL_FRACTION = 0.8
-PACGUM_CELL_FRACTION = 0.22
-SUPER_PACGUM_CELL_FRACTION = 0.5
+PACGUM_CELL_FRACTION = 0.6
+PACGUM_CELL_FRACTION_MINECRAFT = 0.22
+SUPER_PACGUM_CELL_FRACTION = 1.0
+SUPER_PACGUM_CELL_FRACTION_MINECRAFT = 0.8
 
 RESPAWN_PLAYER_DELAY = 3.0
 RESPAWN_PLAYER_DURATION = 3.0
@@ -40,7 +42,6 @@ class GameView(arcade.View):
         self.cheat_mode = cheat_mode
         self.time_passed = 0.0
         self.ghost_speed = Ghost.scale_speed(self.level, self.config.level)
-        print(self.ghost_speed)
         self.lives = lives
         self.remaining_time = config.level_max_time
         self.remaining_time_stock = 0.0
@@ -332,10 +333,16 @@ class GameView(arcade.View):
                                      self.maze.assets.wall, WALL_WIDTH)
 
                 # display pacgums & super_pacgums (sized to the cell)
-                self.fit_to_cell(cell.sprite_pacgum, cell_size,
-                                 PACGUM_CELL_FRACTION)
-                self.fit_to_cell(cell.sprite_super_pacgum, cell_size,
-                                 SUPER_PACGUM_CELL_FRACTION)
+                if self.config.theme == "minecraft":
+                    self.fit_to_cell(cell.sprite_pacgum, cell_size,
+                                     PACGUM_CELL_FRACTION_MINECRAFT)
+                    self.fit_to_cell(cell.sprite_super_pacgum, cell_size,
+                                     SUPER_PACGUM_CELL_FRACTION_MINECRAFT)
+                else:
+                    self.fit_to_cell(cell.sprite_pacgum, cell_size,
+                                     PACGUM_CELL_FRACTION)
+                    self.fit_to_cell(cell.sprite_super_pacgum, cell_size,
+                                     SUPER_PACGUM_CELL_FRACTION)
                 cell.sprite_pacgum.center_x = cx
                 cell.sprite_pacgum.center_y = cy
                 cell.sprite_super_pacgum.center_x = cx
