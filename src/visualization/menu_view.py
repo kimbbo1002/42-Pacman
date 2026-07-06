@@ -28,11 +28,16 @@ class MenuView(arcade.View):
         cy = self.window.height / 2
         font_size = int(20 * scale)
 
-        arcade.draw_text("PAC-MAN", cx, cy + 60 * scale,
-                         arcade.color.YELLOW, int(64 * scale), anchor_x="center", bold=True)
-        arcade.draw_text("Push SPACE to play",
-                         cx, cy - 20 * scale,
-                         arcade.color.WHITE, font_size, anchor_x="center")
+        arcade.draw_text(
+            "PAC-MAN", cx, cy + 60 * scale,
+            arcade.color.YELLOW, int(64 * scale),
+            anchor_x="center", bold=True
+        )
+        arcade.draw_text(
+            "Push SPACE to play",
+            cx, cy - 20 * scale,
+            arcade.color.WHITE, font_size, anchor_x="center"
+        )
 
         # Highscores display
         arcade.draw_text("HIGHSCORES :",
@@ -50,10 +55,12 @@ class MenuView(arcade.View):
         else:
             for i, entry in enumerate(highscores):
 
-                arcade.draw_text(f"{i+1}. {entry['player_name']} :"
-                                 f" {entry['score']} pts",
-                                 cx_scores, cy_score,
-                                 arcade.color.WHITE, font_size, anchor_x="center")
+                arcade.draw_text(
+                    f"{i+1}. {entry['player_name']} :"
+                    f" {entry['score']} pts",
+                    cx_scores, cy_score,
+                    arcade.color.WHITE, font_size, anchor_x="center"
+                )
                 cy_score -= 40 * scale
 
         # Commands display

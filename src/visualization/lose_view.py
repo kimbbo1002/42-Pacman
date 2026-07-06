@@ -30,13 +30,15 @@ class LoseView(arcade.View):
         self.v_box.add(self.label)
 
         self.input_field = InputName(
-            width=box_width, height=int(50 * scale), text="", text_color=arcade.color.BLACK,
+            width=box_width, height=int(50 * scale),
+            text="", text_color=arcade.color.BLACK,
             font_size=int(25 * scale)
         )
 
         input_bg = self.input_field.with_background(
             texture=arcade.texture.Texture.create_empty(
-                name="input_bg", size=(box_width, int(50 * scale)), color=arcade.color.WHITE
+                name="input_bg", size=(box_width, int(50 * scale)),
+                color=arcade.color.WHITE
             )
         )
         self.v_box.add(input_bg)
@@ -64,18 +66,27 @@ class LoseView(arcade.View):
         self.clear()
         scale = ui_scale(self.window)
 
-        arcade.draw_text("The ghosts have gotten "
-                         "the better of you", self.cx, self.cy + 190 * scale,
-                         arcade.color.RED_DEVIL, int(40 * scale), anchor_x="center")
-        arcade.draw_text("YOU LOST", self.cx, self.cy + 100 * scale,
-                         arcade.color.RED_DEVIL, int(60 * scale),
-                         anchor_x="center", bold=True)
-        arcade.draw_text(f"Your score : {self.score}", self.cx, self.cy + 20 * scale,
-                         arcade.color.BLUE_VIOLET, int(50 * scale), anchor_x="center")
+        arcade.draw_text(
+            "The ghosts have gotten the better of you",
+            self.cx, self.cy + 190 * scale,
+            arcade.color.RED_DEVIL, int(40 * scale),
+            anchor_x="center"
+        )
+        arcade.draw_text(
+            "YOU LOST", self.cx, self.cy + 100 * scale,
+            arcade.color.RED_DEVIL, int(60 * scale),
+            anchor_x="center", bold=True
+        )
+        arcade.draw_text(
+            f"Your score : {self.score}", self.cx, self.cy + 20 * scale,
+            arcade.color.BLUE_VIOLET, int(50 * scale), anchor_x="center"
+        )
         self.manager.draw()
-        arcade.draw_text("Push ENTER to save and return to menu",
-                         self.cx, self.cy - 500 * scale,
-                         arcade.color.WHITE, int(20 * scale), anchor_x="center")
+        arcade.draw_text(
+            "Push ENTER to save and return to menu",
+            self.cx, self.cy - 500 * scale,
+            arcade.color.WHITE, int(20 * scale), anchor_x="center"
+        )
 
     def on_key_press(self, key, modifiers):
         """Return to menu with SPACE, leave fullscreen with F,

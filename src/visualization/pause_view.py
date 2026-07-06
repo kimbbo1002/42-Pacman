@@ -26,21 +26,32 @@ class PauseView(arcade.View):
         self.clear()
         scale = ui_scale(self.window)
 
-        arcade.draw_text("PAUSE", self.cx, self.cy + 60 * scale,
-                         arcade.color.YELLOW, int(64 * scale), anchor_x="center", bold=True)
-        arcade.draw_text(f"Level {self.game_view.level}",
-                         self.cx, self.cy - 20 * scale,
-                         arcade.color.YELLOW, int(30 * scale), anchor_x="center")
-        arcade.draw_text(f"Your score : {self.game_view.player.score}",
-                         self.cx, self.cy - 60 * scale,
-                         arcade.color.YELLOW, int(30 * scale), anchor_x="center")
-        arcade.draw_text("Push SPACE to resume the game",
-                         self.cx, self.cy - 200 * scale,
-                         arcade.color.WHITE, int(20 * scale), anchor_x="center")
-        arcade.draw_text("Push ESCAPE to exit the game and return to menu",
-                         self.cx, self.cy - 400 * scale,
-                         arcade.color.BLUE_GRAY, int(20 * scale), anchor_x="center",
-                         bold=True)
+        arcade.draw_text(
+            "PAUSE", self.cx, self.cy + 60 * scale,
+            arcade.color.YELLOW, int(64 * scale),
+            anchor_x="center", bold=True
+        )
+        arcade.draw_text(
+            f"Level {self.game_view.level}",
+            self.cx, self.cy - 20 * scale,
+            arcade.color.YELLOW, int(30 * scale), anchor_x="center"
+        )
+        arcade.draw_text(
+            f"Your score : {self.game_view.player.score}",
+            self.cx, self.cy - 60 * scale,
+            arcade.color.YELLOW, int(30 * scale), anchor_x="center"
+        )
+        arcade.draw_text(
+            "Push SPACE to resume the game",
+            self.cx, self.cy - 200 * scale,
+            arcade.color.WHITE, int(20 * scale), anchor_x="center"
+        )
+        arcade.draw_text(
+            "Push ESCAPE to exit the game and return to menu",
+            self.cx, self.cy - 400 * scale,
+            arcade.color.BLUE_GRAY, int(20 * scale), anchor_x="center",
+            bold=True
+        )
 
     def on_key_press(self, key, modifiers):
         """Resume the game with SPACE, go back to the menu with ESCAPE."""
