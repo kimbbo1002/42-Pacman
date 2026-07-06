@@ -1,13 +1,13 @@
 {
 	"highscore_filename": "highscores.json",
 	"level": 3,
-	"width": -1,
-	"height": 30,
-	"lives": 5555555,
+	"width": 20,
+	"height": 20,
+	"lives": 5,
 	"points_per_pacgum": 10,
-	"points_per_super_pacgum": 5000000,
-	"points_per_ghost": 100000000,
-	"seed": -142,
+	"points_per_super_pacgum": 50,
+	"points_per_ghost": 200,
+	"seed": 42,
 	"level_max_time": 90,
-	"theme": "test"
+	"theme": "stardew_valley"
 }
