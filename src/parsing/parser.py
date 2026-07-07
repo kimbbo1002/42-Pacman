@@ -27,7 +27,8 @@ def log_warning(field_name: str, message: str, default: Any) -> None:
     )
 
 
-def catch_duplicate_keys(pairs) -> Dict[str, Any]:
+def catch_duplicate_keys(
+        pairs: list[tuple[str, Any]]) -> Dict[str, Any]:
     """Raise an error if duplicate keys are found in the config file."""
     seen = set()
     dup = set()
