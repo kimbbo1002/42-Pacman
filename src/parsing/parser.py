@@ -27,6 +27,27 @@ def log_warning(field_name: str, message: str, default: Any) -> None:
     )
 
 
+def catch_duplicate_keys(pairs) -> Dict[str, Any]:
+    """Raise an error if duplicate keys are found in the config file."""
+    seen = set()
+    dup = set()
+    res: Dict[str, Any] = {}
+
+    for k, v in pairs:
+        if k in seen:
+            dup.add(k)
+        seen.add(k)
+        res[k] = v
+
+    for k in dup:
+        print(
+            f"\n{Colors.YELLOW}WARNING(CONFIG):\n{Colors.RESET}"
+            f"Duplicate key '{k}' found in config file, using default value"
+        )
+        del res[k]
+    return res
+
+
 class Config(BaseModel):
     """Game settings read from the config file, with safe defaults."""
     highscore_filename: str = Field(default="highscore.json")
@@ -179,7 +200,9 @@ def load_config() -> Config:
     config_filename = sys.argv[1]
     try:
         with open(config_filename, "r") as file:
-            raw_config = json.load(file)
+            raw_config = json.load(
+                file, object_pairs_hook=catch_duplicate_keys
+            )
             return Config(**raw_config)
     except FileNotFoundError:
         print(
