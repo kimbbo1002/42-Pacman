@@ -39,14 +39,16 @@ class MenuView(arcade.View):
         self.config = config
         palette = Assets(config.theme).palette
         self.background = palette["background"]
-        self.panel_fill = tuple(c // 5 for c in palette["wall"]) + (220,)
+        wall = palette["wall"]
+        self.panel_fill = (wall[0] // 5, wall[1] // 5, wall[2] // 5, 220)
 
     def on_show_view(self) -> None:
         "Setup the window with the theme background."
         self.window.background_color = self.background
 
     def _draw_panel(self, left: float, right: float,
-                    bottom: float, top: float, border: tuple) -> None:
+                    bottom: float, top: float,
+                    border: tuple[int, int, int]) -> None:
         """Draw a filled panel with a colored border."""
         arcade.draw_lrbt_rectangle_filled(
             left, right, bottom, top, self.panel_fill)
@@ -88,7 +90,7 @@ class MenuView(arcade.View):
         gap = 60 * scale
         pad = 30 * scale
         panel_top = cy + 90 * scale
-        panel_bottom = cy - 340 * scale
+        panel_bottom = cy - 400 * scale
         header_y = panel_top - pad - font_size
 
         # Highscores panel (left)
@@ -105,11 +107,12 @@ class MenuView(arcade.View):
                              arcade.color.WHITE, font_size, anchor_x="left")
         else:
             for i, entry in enumerate(highscores):
-                color = MEDALS[i] if i < len(MEDALS) else arcade.color.WHITE
+                rank_color = MEDALS[i] if i < len(MEDALS) \
+                    else arcade.color.WHITE
                 arcade.draw_text(
                     f"{i+1}. {entry['player_name']} : {entry['score']} pts",
                     hs_left + pad, cy_score,
-                    color, font_size, anchor_x="left"
+                    rank_color, font_size, anchor_x="left"
                 )
                 cy_score -= 40 * scale
 

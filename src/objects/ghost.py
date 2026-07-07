@@ -27,7 +27,7 @@ class Ghost:
         self.y = y
         self.spawn_x = x
         self.spawn_y = y
-        self.history: deque = deque(maxlen=3)
+        self.history: deque[tuple[int, int]] = deque(maxlen=3)
         self.point = 0
         self.is_closest = False
         self.dead = False

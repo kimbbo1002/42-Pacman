@@ -48,6 +48,7 @@ class GameView(arcade.View):
         self.time_before_respawn = 0.0
         self.pause = False
         self.pause_start = 0.0
+        self.time_out = False
         arcade.resources.load_kenney_fonts()
 
     def setup(self, generator: MazeGenerator) -> None:
@@ -98,7 +99,8 @@ class GameView(arcade.View):
             theme_scale = 0.8
         scale = theme_scale * scale_ui
         spacing = 100 * scale_ui
-        lives_list: arcade.SpriteList = arcade.SpriteList()
+        lives_list: arcade.SpriteList[arcade.BasicSprite] = \
+            arcade.SpriteList()
         life_x = info_x + 50 * scale_ui
         life_y = info_y - 80 * scale_ui
         if self.config.lives <= 5:
@@ -465,15 +467,18 @@ class GameView(arcade.View):
                     self.remaining_time_stock -= 1.0
 
             if self.remaining_time < 0:
-                self.player.lives = -1
+                # self.player.lives = -1
+                self.time_out = True
 
             if now - self.player.super_mode_start > SUPER_MODE_DELAY:
                 self.player.super_mode = False
 
             # out of lives: end the game now, do not respawn
-            if self.player.is_dead():
+            if self.player.is_dead() or self.time_out:
                 from src.visualization import LoseView
-                self.window.show_view(LoseView(self.config, self.player.score))
+                self.window.show_view(LoseView(self.config,
+                                               self.player.score,
+                                               self.time_out))
                 return
 
             if (self.player.dead and now - self.player.dead_since
@@ -481,9 +486,11 @@ class GameView(arcade.View):
                 self.player.respawn()
 
             if self.player.super_mode:
-                arcade.set_background_color(self.maze.assets.super_background)
+                arcade.set_background_color(
+                    (*self.maze.assets.super_background, 255))
             else:
-                arcade.set_background_color(self.maze.assets.background)
+                arcade.set_background_color(
+                    (*self.maze.assets.background, 255))
 
             if self.time_passed < self.ghost_speed:
                 self.time_passed += delta_time

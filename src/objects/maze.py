@@ -59,8 +59,10 @@ class Maze:
         self.score = score
         self.lives = lives
         # pacgums in the back layer, characters (ghosts + player) on top
-        self.sprites: arcade.SpriteList = arcade.SpriteList()
-        self.character_sprites: arcade.SpriteList = arcade.SpriteList()
+        self.sprites: arcade.SpriteList[arcade.BasicSprite] = \
+            arcade.SpriteList()
+        self.character_sprites: arcade.SpriteList[arcade.BasicSprite] = \
+            arcade.SpriteList()
 
         # initialize maze
         for y, line in enumerate(maze):
@@ -70,7 +72,7 @@ class Maze:
                 line_list.append(cell)
             self.maze.append(line_list)
 
-    def find_player_spawn(self) -> tuple:
+    def find_player_spawn(self) -> tuple[int, int]:
         """Return the cell nearest the centre that the player can stand on,
             avoiding the 42 patern."""
         cx, cy = self.cols // 2, self.rows // 2

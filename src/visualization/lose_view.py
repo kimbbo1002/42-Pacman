@@ -8,11 +8,12 @@ from .scaler import ui_scale
 class LoseView(arcade.View):
     """Screen of lose."""
 
-    def __init__(self, config: Config, score: int) -> None:
+    def __init__(self, config: Config, score: int, time_out: bool) -> None:
         """Store the config and the final score to display."""
         super().__init__()
         self.config = config
         self.score = score
+        self.time_out = time_out
         self.manager = arcade.gui.UIManager()
         scale = ui_scale(self.window)
         box_width = int(400 * scale)
@@ -66,14 +67,16 @@ class LoseView(arcade.View):
         self.clear()
         scale = ui_scale(self.window)
 
+        if self.time_out:
+            arcade.draw_text(
+                "TIME OUT",
+                self.cx, self.cy + 250 * scale,
+                arcade.color.RED_DEVIL, int(50 * scale),
+                anchor_x="center"
+            )
+
         arcade.draw_text(
-            "The ghosts have gotten the better of you",
-            self.cx, self.cy + 190 * scale,
-            arcade.color.RED_DEVIL, int(40 * scale),
-            anchor_x="center"
-        )
-        arcade.draw_text(
-            "YOU LOST", self.cx, self.cy + 100 * scale,
+            "GAME OVER", self.cx, self.cy + 100 * scale,
             arcade.color.RED_DEVIL, int(60 * scale),
             anchor_x="center", bold=True
         )

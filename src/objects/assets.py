@@ -32,16 +32,16 @@ class Assets:
         return f"{self.RESOURCES}/{self.theme}/{category}/{name}.png"
 
     @property
-    def wall(self) -> tuple:
+    def wall(self) -> tuple[int, int, int]:
         """Maze wall color."""
         return self.palette["wall"]
 
     @property
-    def background(self) -> tuple:
+    def background(self) -> tuple[int, int, int]:
         """Normal background color."""
         return self.palette["background"]
 
     @property
-    def super_background(self) -> tuple:
+    def super_background(self) -> tuple[int, int, int]:
         """Background color during super mode."""
         return self.palette["super_background"]
