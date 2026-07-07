@@ -198,7 +198,8 @@ class Config(BaseModel):
                 "points_per_ghost]\n"
                 "\nAll points must respect hierarchy\n"
                 "points_per_pacgum * 2 <= points_per_super_pacgum * 2"
-                " <= points_per_ghost"
+                " <= points_per_ghost\n"
+                "Setting values by default : 10 / 50 / 200 points"
             )
             self.points_per_pacgum = 10
             self.points_per_super_pacgum = 50
