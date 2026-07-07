@@ -71,6 +71,13 @@ class Config(BaseModel):
         if not isinstance(data, dict):
             return data
 
+        for f_name in data.keys():
+            if f_name not in cls.model_fields:
+                print(
+                    f"\n{Colors.YELLOW}WARNING(CONFIG):\n{Colors.RESET}"
+                    f"Unknown field '{f_name}' in config file, ignoring it"
+                )
+
         clean_data = {}
         themes = ["pacman", "stardew_valley", "minecraft"]
         for field_name, field_info in cls.model_fields.items():
@@ -89,7 +96,14 @@ class Config(BaseModel):
 
             try:
                 if field_info.annotation is int:
-                    if not isinstance(raw_value, int):
+                    if isinstance(raw_value, float):
+                        print(
+                            f"\n{Colors.YELLOW}WARNING(CONFIG):\n"
+                            f"{Colors.RESET}"
+                            f"Field '{field_name}' is a float, "
+                            "converting to int"
+                        )
+                    elif not isinstance(raw_value, int):
                         raise ValueError("must be a whole number, not text")
                     validated_val = int(raw_value)
                     if validated_val <= 0:
