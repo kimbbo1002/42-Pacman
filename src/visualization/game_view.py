@@ -15,6 +15,9 @@ WALL_LEFT = 8     # bit 8
 WALL_WIDTH = 3
 MARGIN = 50
 
+LEFT_PANEL_WIDTH = 600
+RIGHT_PANEL_WIDTH = 650
+
 PLAYER_CELL_FRACTION = 0.8
 GHOST_CELL_FRACTION = 0.8
 PACGUM_CELL_FRACTION = 0.6
@@ -63,13 +66,22 @@ class GameView(arcade.View):
         """Return the cell size and where to start drawing the maze."""
         w = self.window.width
         h = self.window.height
-        cell_size = min(
-            (w - 2 * MARGIN) // self.cols,
-            (h - 2 * MARGIN) // self.rows,
-        )
+        scale = ui_scale(self.window)
+
+        # reserve space for the side panels, fit the maze in what remains
+        left_reserved = LEFT_PANEL_WIDTH * scale
+        right_reserved = RIGHT_PANEL_WIDTH * scale
+        avail_w = w - left_reserved - right_reserved
+        avail_h = h - 2 * MARGIN
+
+        cell_size = max(1, int(min(
+            avail_w // self.cols,
+            avail_h // self.rows,
+        )))
         maze_w = self.cols * cell_size
         maze_h = self.rows * cell_size
-        offset_x = (w - maze_w) / 2
+        # center the maze within the central band, between the two panels
+        offset_x = left_reserved + (avail_w - maze_w) / 2
         offset_y = (h - maze_h) / 2
         maze_top = offset_y + maze_h
         return cell_size, offset_x, maze_top

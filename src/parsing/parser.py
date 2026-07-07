@@ -76,6 +76,11 @@ class Config(BaseModel):
             default_value = field_info.default
 
             if field_name not in data:
+                print(
+                    f"\n{Colors.YELLOW}WARNING(CONFIG):\n{Colors.RESET}"
+                    f"Missing key '{field_name}': "
+                    f"setting to default value {default_value}"
+                )
                 clean_data[field_name] = default_value
                 continue
 
@@ -83,6 +88,8 @@ class Config(BaseModel):
 
             try:
                 if field_info.annotation is int:
+                    if not isinstance(raw_value, int):
+                        raise ValueError("must be a whole number, not text")
                     validated_val = int(raw_value)
                     if validated_val <= 0:
                         raise ValueError("needs to be greater than 0")

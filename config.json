@@ -1,14 +1,13 @@
 {
 	"highscore_filename": "highscores.json",
-	"level": 3,
+	"level": 10,
 	"width": 10,
-	"height": 10,
+	"height": 30,
 	"lives": 3,
 	"points_per_pacgum": 1,
 	"points_per_super_pacgum": 2,
 	"points_per_ghost": 5,
 	"seed": 42,
-	"level_max_time": 90
-	,
+	"level_max_time": 90,
 	"theme": "pacman"
 }
