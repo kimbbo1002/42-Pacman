@@ -12,12 +12,8 @@ debug:
 	$(PYTHON) -m pdb $(MAIN) $(CONFIG)
 
 lint:
-	flake8 . --exclude .venv
-	mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
-
-lint-strict:
-	flake8 . --exclude .venv
-	mypy . --strict
+	uv run flake8 . --exclude .venv
+	uv run mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
 
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +
