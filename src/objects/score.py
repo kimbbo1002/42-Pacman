@@ -17,46 +17,49 @@ class Score:
 
     @staticmethod
     def load_scores(filename: str) -> list[Dict[str, Any]]:
-        """Read the JSON file and return the list of scores.
-
-        Raise a ValueError if the file content is not a list or if any
-        entry is not a dict holding a string player_name and an int score.
-        """
-
+        """Read the JSON file and return the list of valid scores.
+        Invalid entries (not an object, missing or empty player_name,
+        name too long, missing or negative score) are skipped. A missing
+        file or an unreadable file returns an empty list."""
         try:
             with open(filename, "r", encoding="utf-8") as file:
                 data = json.load(file)
         except FileNotFoundError:
             return []
-        except json.JSONDecodeError as error:
-            raise ValueError(f"{filename} is not valid JSON") from error
+        except json.JSONDecodeError:
+            print(f"{filename} is not valid JSON, ignoring highscores")
+            return []
 
         if not isinstance(data, list):
-            raise ValueError(f"{filename} must contain a list of scores")
+            print(f"{filename} must contain a list of scores, "
+                  "ignoring highscores")
+            return []
 
+        valid_scores: list[Dict[str, Any]] = []
         for i, entry in enumerate(data):
             if not isinstance(entry, dict):
-                raise ValueError(f"Entry {i + 1} is not an object: {entry!r}")
+                print(f"Entry {i + 1} is not an object, skipped: {entry!r}")
+                continue
 
             name = entry.get("player_name")
             if not isinstance(name, str) or name == "":
-                raise ValueError(
-                    f"Entry {i + 1} has a missing or "
-                    f"empty player_name: {entry!r}"
-                )
-            elif len(name) > 10:
-                raise ValueError(
-                    f"Entry {i + 1} has a player_name too long "
-                    f"(max 10 characters): {entry!r}"
-                )
+                print(f"Entry {i + 1} has an invalid or empty "
+                      f"player_name, skipped: {entry!r}")
+                continue
+            if len(name) > 10:
+                print(f"Entry {i + 1} has a player_name too long "
+                      f"(max 10 characters), skipped: {entry!r}")
+                continue
 
             score = entry.get("score")
             if not isinstance(score, int) or score < 0:
-                raise ValueError(
-                    f"Entry {i + 1} has a missing or negative score: {entry!r}"
-                )
+                print(f"Entry {i + 1} has an invalid or negative "
+                      f"score, skipped: {entry!r}")
+                continue
 
-        return data
+            valid_scores.append(entry)
+
+        return valid_scores
 
     def save(self, filename: str) -> None:
         """Save the score in a sorted order in the JSON file with

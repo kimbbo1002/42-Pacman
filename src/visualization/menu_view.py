@@ -45,6 +45,12 @@ class MenuView(arcade.View):
     def on_show_view(self) -> None:
         "Setup the window with the theme background."
         self.window.background_color = self.background
+        try:
+            self.highscores = Score.load_scores(self.config.highscore_filename)
+        except Exception as e:
+            print(e)
+            print("Highscores file is invalid, set up as empty")
+            self.highscores = []
 
     def _draw_panel(self, left: float, right: float,
                     bottom: float, top: float,
@@ -100,13 +106,12 @@ class MenuView(arcade.View):
         arcade.draw_text("HIGHSCORES", hs_left + pad, header_y,
                          MEDALS[0], font_size, anchor_x="left", bold=True)
 
-        highscores = Score.load_scores(self.config.highscore_filename)
         cy_score = header_y - 50 * scale
-        if highscores == []:
+        if self.highscores == []:
             arcade.draw_text("No scores saved", hs_left + pad, cy_score,
                              arcade.color.WHITE, font_size, anchor_x="left")
         else:
-            for i, entry in enumerate(highscores):
+            for i, entry in enumerate(self.highscores):
                 rank_color = MEDALS[i] if i < len(MEDALS) \
                     else arcade.color.WHITE
                 arcade.draw_text(
