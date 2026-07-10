@@ -1,4 +1,5 @@
 import json
+import os
 import sys
 from pydantic import BaseModel, Field, model_validator
 from typing import Dict, Any
@@ -210,19 +211,25 @@ class Config(BaseModel):
 
 
 def load_config() -> Config:
+    print("loading config")
     """Read the config file given on the command line, or fall back
     to default values on any error."""
-    if len(sys.argv) != 2:
-        print(
-            f"\n{Colors.RED}ERROR(CONFIG):\n{Colors.RESET}"
-            "This program takes exactly one argument: a configuration file\n"
-            "Example use: python3 pac-man.py config.json"
-        )
-        sys.exit(1)
 
-    config_filename = sys.argv[1]
+    if len(sys.argv) > 1:
+        config_path = sys.argv[1]
+        if len(sys.argv) != 2:
+            print(
+                f"\n{Colors.RED}ERROR(CONFIG):\n{Colors.RESET}"
+                "This program takes exactly one argument: a configuration file"
+                "\nExample use: python3 pac-man.py config.json"
+            )
+            sys.exit(1)
+    else:
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        root_dir = os.path.abspath(os.path.join(current_dir, "..", ".."))
+        config_path = os.path.join(root_dir, "config.json")
     try:
-        with open(config_filename, "r") as file:
+        with open(config_path, "r") as file:
             raw_config = json.load(
                 file, object_pairs_hook=catch_duplicate_keys
             )
@@ -230,7 +237,7 @@ def load_config() -> Config:
     except FileNotFoundError:
         print(
             f"\n{Colors.RED}ERROR(CONFIG):\n{Colors.RESET}"
-            f"File '{config_filename}' was not found"
+            f"File '{config_path}' was not found"
         )
     except json.JSONDecodeError:
         print(
