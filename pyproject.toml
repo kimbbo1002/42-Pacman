@@ -19,6 +19,9 @@ mazegenerator = { path = "mazegenerator-2.0.2-py3-none-any.whl" }
 # Resolve third-party types (e.g. arcade ships a py.typed marker) from the
 # project's virtualenv, even when mypy itself runs from another environment.
 python_executable = ".venv/bin/python"
+# PyInstaller copies whole third-party packages into build/ and dist/;
+# they are not our sources and must not be type-checked.
+exclude = "^(build|dist)/"
 
 [[tool.mypy.overrides]]
 # mazegenerator has no type stubs / py.typed marker.

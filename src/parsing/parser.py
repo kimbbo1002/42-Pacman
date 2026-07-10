@@ -1,9 +1,10 @@
 import json
-import os
 import sys
 from pydantic import BaseModel, Field, model_validator
 from typing import Dict, Any
 from enum import Enum
+
+from ..paths import default_config_path
 
 
 class Colors(Enum):
@@ -225,9 +226,7 @@ def load_config() -> Config:
             )
             sys.exit(1)
     else:
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        root_dir = os.path.abspath(os.path.join(current_dir, "..", ".."))
-        config_path = os.path.join(root_dir, "config.json")
+        config_path = default_config_path()
     try:
         with open(config_path, "r") as file:
             raw_config = json.load(

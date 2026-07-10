@@ -1,0 +1,103 @@
+================================================================
+ PAC-MAN
+================================================================
+
+A complete Pac-Man: eat every pacgum in a procedurally generated
+maze while the ghosts hunt you down.
+
+
+INSTALLATION
+------------
+No installer needed. Unzip this folder anywhere, then run the
+`pacman` executable inside it:
+
+    ./pacman
+
+Keep `pacman`, `_internal/` and `config.json` together in the same
+folder: the game loads its data from `_internal/`.
+
+If the file is not executable after unzipping:
+
+    chmod +x pacman
+
+You can launch it from any directory; it always finds its own data.
+
+
+CONTROLS
+--------
+  Main menu
+    Space ............. start a new game
+    Escape ............ quit the game
+
+  While playing
+    Arrow keys ........ move Pac-Man
+    P ................. pause
+    Escape ............ back to the main menu (abandons the game)
+
+  Paused
+    Space ............. resume
+    Escape ............ back to the main menu
+
+  After winning or losing
+    Type your name, then Enter ..... save your score, back to menu
+
+  Between levels
+    Space ............. start the next level
+
+  Cheat mode
+    C ................. toggle cheat mode on/off
+    G ................. freeze the ghosts    (cheat mode only)
+    N ................. skip to next level   (cheat mode only)
+
+  In cheat mode the level timer stops and ghosts can no longer kill
+  you. Scores made in cheat mode are still recorded.
+
+
+RULES
+-----
+Eat every pacgum in the maze to clear the level.
+
+Super pacgums turn the tables for 8 seconds: the ghosts become edible
+and are worth far more points. Touching a ghost outside super mode
+costs a life; you respawn after 3 seconds and are briefly invincible
+(you blink while it lasts).
+
+The game ends when you run out of lives, or when the level timer
+reaches zero. Clear the last level to win.
+
+
+CONFIGURATION
+-------------
+Edit `config.json`, in this folder, next to the executable. It is read
+once at startup.
+
+Every entry is optional. An invalid or missing one falls back to a
+safe default and prints a warning, so a broken config never prevents
+the game from starting.
+
+  theme ..................... "pacman", "minecraft" or "stardew_valley"
+  level ..................... number of levels to clear
+  width, height ............. maze size in cells, from 10x10 to 30x30
+  lives ..................... starting lives
+  level_max_time ............ seconds allowed per level
+  seed ...................... seed of the first maze; the mazes of the
+                              later levels are random
+  points_per_pacgum ......... score for one pacgum
+  points_per_super_pacgum ... score for one super pacgum
+  points_per_ghost .......... score for eating one ghost
+  highscore_filename ........ file holding the top 10 scores
+
+Point values must grow with rarity:
+    points_per_pacgum < points_per_super_pacgum < points_per_ghost
+
+To play a different config without touching this one, pass it on the
+command line:
+
+    ./pacman /path/to/my_config.json
+
+
+HIGHSCORES
+----------
+The top 10 scores are kept in the file named by `highscore_filename`
+(default: `highscores.json`), written next to the executable. It
+appears after your first finished game. Delete it to reset the board.

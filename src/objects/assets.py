@@ -1,3 +1,5 @@
+from ..paths import bundle_path
+
 
 class Assets:
     """Resolve textures and colors for the chosen theme."""
@@ -28,8 +30,12 @@ class Assets:
         self.palette = self.PALETTES.get(theme, self.PALETTES["pacman"])
 
     def texture(self, category: str, name: str) -> str:
-        """Build the path to a texture in the current theme."""
-        return f"{self.RESOURCES}/{self.theme}/{category}/{name}.png"
+        """Build the path to a texture in the current theme.
+
+        Absolute, so textures load whatever the working directory is and
+        whether or not the game runs from a PyInstaller bundle."""
+        return bundle_path(self.RESOURCES, self.theme, category,
+                           f"{name}.png")
 
     @property
     def wall(self) -> tuple[int, int, int]:

@@ -2,6 +2,8 @@ import json
 import arcade.gui
 from typing import Dict, Any
 
+from ..paths import writable_path
+
 
 class Score:
 
@@ -21,6 +23,7 @@ class Score:
         Invalid entries (not an object, missing or empty player_name,
         name too long, missing or negative score) are skipped. A missing
         file or an unreadable file returns an empty list."""
+        filename = writable_path(filename)
         try:
             with open(filename, "r", encoding="utf-8") as file:
                 data = json.load(file)
@@ -64,7 +67,7 @@ class Score:
     def save(self, filename: str) -> None:
         """Save the score in a sorted order in the JSON file with
             the top 10 highscores."""
-
+        filename = writable_path(filename)
         scores_list = self.load_scores(filename)
         scores_list.append(self.to_dict())
 
