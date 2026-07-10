@@ -211,7 +211,6 @@ class Config(BaseModel):
 
 
 def load_config() -> Config:
-    print("loading config")
     """Read the config file given on the command line, or fall back
     to default values on any error."""
 
