@@ -227,8 +227,18 @@ def load_config() -> Config:
         config_path = default_config_path()
     try:
         with open(config_path, "r") as file:
-            raw_config = json.load(
-                file, object_pairs_hook=catch_duplicate_keys
+            clean_config = []
+            for line in file:
+                if line.startswith("#"):
+                    print(
+                        f"\n{Colors.YELLOW}WARNING(CONFIG):\n{Colors.RESET}"
+                        "Comment detected in config file, ignoring it. "
+                    )
+                    continue
+                clean_config.append(line)
+            clean_json_str = "".join(clean_config)
+            raw_config = json.loads(
+                clean_json_str, object_pairs_hook=catch_duplicate_keys
             )
             return Config(**raw_config)
     except FileNotFoundError:
