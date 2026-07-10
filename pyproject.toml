@@ -9,6 +9,7 @@ dependencies = [
     "numpy",
     "mazegenerator",
     "pydantic>=2.13.4",
+    "pyinstaller"
 ]
 
 [tool.uv.sources]
