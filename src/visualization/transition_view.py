@@ -1,9 +1,9 @@
-import arcade
-from .game_view import GameView
-from src.parsing import Config
 from mazegenerator import MazeGenerator
-import random
+from src.parsing import Config
+from .game_view import GameView
 from .scaler import ui_scale
+import random
+import arcade
 
 
 class TransitionView(arcade.View):

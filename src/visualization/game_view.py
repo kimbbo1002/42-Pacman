@@ -1,8 +1,7 @@
-from src.parsing import Config
-from ..objects import Ghost
 from mazegenerator import MazeGenerator
+from src.parsing import Config
+from src.objects import Maze, Ghost
 import arcade
-from src.objects import Maze
 import time
 
 

@@ -1,9 +1,6 @@
 import arcade
 import time
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from src.visualization import GameView
+from src.visualization import GameView
 
 
 class Inputs:

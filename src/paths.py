@@ -1,15 +1,3 @@
-"""Filesystem paths that stay correct once the game is frozen by PyInstaller.
-
-Two kinds of paths, and they must not be confused:
-
-- Read-only game data (textures, the default config) ships *inside* the
-  bundle. PyInstaller extracts it to ``sys._MEIPASS``, which is neither the
-  working directory nor the folder holding the executable.
-- Files the player owns (their config, their highscores) must be editable and
-  must survive across runs, so they live *next to the executable*.
-
-During development both resolve to the project root.
-"""
 import os
 import sys
 

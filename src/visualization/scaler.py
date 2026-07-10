@@ -1,5 +1,5 @@
-import arcade
 from typing import Any
+import arcade
 
 
 REFERENCE_WIDTH = 2560

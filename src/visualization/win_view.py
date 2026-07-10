@@ -1,8 +1,8 @@
-import arcade
-import arcade.gui
 from src.parsing import Config
 from src.objects import Score, InputName
 from .scaler import ui_scale
+import arcade
+import arcade.gui
 
 
 class WinView(arcade.View):

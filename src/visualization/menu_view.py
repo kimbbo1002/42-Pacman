@@ -1,10 +1,9 @@
 from mazegenerator import MazeGenerator
 from .game_view import GameView
 from src.parsing import Config
-import arcade
-from src.objects import Score
-from src.objects.assets import Assets
+from src.objects import Score, Assets
 from .scaler import ui_scale
+import arcade
 
 # Classic Pac-Man palette, reused for menu accents
 PACMAN_YELLOW = (255, 255, 0)

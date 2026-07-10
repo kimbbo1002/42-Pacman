@@ -1,9 +1,5 @@
 import arcade
-from typing import TYPE_CHECKING
-from src.visualization import ui_scale
-
-if TYPE_CHECKING:
-    from src.visualization import GameView
+from src.visualization import ui_scale, GameView
 
 
 LEFT_PANEL_WIDTH = 600
