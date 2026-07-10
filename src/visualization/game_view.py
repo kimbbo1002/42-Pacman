@@ -4,7 +4,6 @@ from mazegenerator import MazeGenerator
 import arcade
 from src.objects import Maze
 import time
-from .scaler import ui_scale
 
 
 WALL_TOP = 1      # bit 1
@@ -13,17 +12,11 @@ WALL_BOTTOM = 4   # bit 4
 WALL_LEFT = 8     # bit 8
 
 WALL_WIDTH = 3
-MARGIN = 50
-
-LEFT_PANEL_WIDTH = 600
-RIGHT_PANEL_WIDTH = 650
 
 PLAYER_CELL_FRACTION = 0.8
 GHOST_CELL_FRACTION = 0.8
 PACGUM_CELL_FRACTION = 0.6
-PACGUM_CELL_FRACTION_MINECRAFT = 0.22
 SUPER_PACGUM_CELL_FRACTION = 1.0
-SUPER_PACGUM_CELL_FRACTION_MINECRAFT = 0.8
 
 RESPAWN_PLAYER_DELAY = 3.0
 RESPAWN_PLAYER_DURATION = 3.0
@@ -36,6 +29,7 @@ class GameView(arcade.View):
     def __init__(self, config: Config, level: int, score: int, lives: int,
                  cheat_mode: bool = False):
         """Store the maze size and the positions of the pacgums."""
+        from src.ui import GameHUD, Geometry, Inputs
         super().__init__()
         self.config = config
         self.cols = config.width
@@ -53,6 +47,9 @@ class GameView(arcade.View):
         self.pause_start = 0.0
         self.time_out = False
         arcade.resources.load_kenney_fonts()
+        self.hud = GameHUD(self)
+        self.geometry = Geometry(self)
+        self.inputs = Inputs(self)
 
     def setup(self, generator: MazeGenerator) -> None:
         """Build the maze and place a pacgum in every cell."""
@@ -62,259 +59,11 @@ class GameView(arcade.View):
         self.player = self.maze.player
         self.player.cheat_mode = self.cheat_mode
 
-    def grid_geometry(self) -> tuple[int, float, float]:
-        """Return the cell size and where to start drawing the maze."""
-        w = self.window.width
-        h = self.window.height
-        scale = ui_scale(self.window)
-
-        # reserve space for the side panels, fit the maze in what remains
-        left_reserved = LEFT_PANEL_WIDTH * scale
-        right_reserved = RIGHT_PANEL_WIDTH * scale
-        avail_w = w - left_reserved - right_reserved
-        avail_h = h - 2 * MARGIN
-
-        cell_size = max(1, int(min(
-            avail_w // self.cols,
-            avail_h // self.rows,
-        )))
-        maze_w = self.cols * cell_size
-        maze_h = self.rows * cell_size
-        # center the maze within the central band, between the two panels
-        offset_x = left_reserved + (avail_w - maze_w) / 2
-        offset_y = (h - maze_h) / 2
-        maze_top = offset_y + maze_h
-        return cell_size, offset_x, maze_top
-
-    def cell_center(self, row: int, col: int, cell_size: int,
-                    offset_x: float, maze_top: float) -> tuple[float, float]:
-        """Return the screen point at the middle of a cell."""
-        cx = offset_x + col * cell_size + cell_size / 2
-        cy = maze_top - row * cell_size - cell_size / 2
-        return cx, cy
-
-    @staticmethod
-    def fit_to_cell(sprite: arcade.BasicSprite, cell_size: int,
-                    fraction: float) -> None:
-        """Scale a sprite so its largest side spans `fraction` of a cell,
-        keeping the texture aspect ratio (independent of its native size)."""
-        native = max(sprite.texture.width, sprite.texture.height)
-        sprite.scale = (cell_size * fraction) / native
-
-    def draw_lives(self, info_x: int, info_y: int) -> None:
-        scale_ui = ui_scale(self.window)
-        if self.config.theme == "pacman":
-            theme_scale = 0.5
-        elif self.config.theme == "minecraft":
-            theme_scale = 0.3
-        elif self.config.theme == "stardew_valley":
-            theme_scale = 0.8
-        scale = theme_scale * scale_ui
-        spacing = 100 * scale_ui
-        lives_list: arcade.SpriteList[arcade.BasicSprite] = \
-            arcade.SpriteList()
-        life_x = info_x + 50 * scale_ui
-        life_y = info_y - 80 * scale_ui
-        if self.config.lives <= 5:
-            for i in range(self.player.lives):
-                texture_path = self.maze.assets.texture("player", "normal")
-                texture = arcade.load_texture(texture_path)
-                sprite = arcade.BasicSprite(
-                    texture, center_x=life_x, center_y=life_y, scale=scale
-                )
-                lives_list.append(sprite)
-                life_x += spacing
-        else:
-            for i in range(5):
-                if self.player.lives > i:
-                    texture_path = self.maze.assets.texture("player", "normal")
-                    texture = arcade.load_texture(texture_path)
-                    sprite = arcade.BasicSprite(
-                        texture, center_x=life_x, center_y=life_y, scale=scale
-                    )
-                    lives_list.append(sprite)
-                    life_x += spacing
-            life_x = info_x + 50 * scale_ui
-            for i in range(self.player.lives - 5):
-                texture_path = self.maze.assets.texture("player", "normal")
-                texture = arcade.load_texture(texture_path)
-                sprite = arcade.BasicSprite(
-                    texture, center_x=life_x, center_y=life_y - 120 * scale_ui,
-                    scale=scale
-                )
-                lives_list.append(sprite)
-                life_x += spacing
-        lives_list.draw()
-
-    def display_info_right(self) -> None:
-        """Draw the level, score, remaining lives, remaining time
-            and remaining time before respawn when the player is dead
-            on the right side of the maze."""
-        cell_size, offset_x, maze_top = self.grid_geometry()
-        scale = ui_scale(self.window)
-        font_size = int(30 * scale)
-
-        maze_w = self.cols * cell_size
-        maze_right_edge = offset_x + maze_w
-
-        info_x = maze_right_edge + 50 * scale
-        info_y_level = maze_top - 100 * scale
-        info_y_score = info_y_level - 100 * scale
-        info_y_lives = info_y_score - 100 * scale
-        if self.config.lives <= 5:
-            info_y_time = info_y_lives - 200 * scale
-        else:
-            info_y_time = info_y_lives - 320 * scale
-        info_y_time_respawn = info_y_time - 200 * scale
-        info_y_cheat_mode = info_y_time_respawn - 200 * scale
-
-        # display level
-        arcade.draw_text(
-            f"Level {self.level} / {self.config.level}",
-            info_x,
-            info_y_level,
-            arcade.color.YELLOW,
-            font_size,
-            font_name="Kenney Rocket"
-        )
-
-        # display score
-        arcade.draw_text(
-            f"Score : {self.player.score}",
-            info_x, info_y_score,
-            arcade.color.YELLOW,
-            font_size,
-            font_name="Kenney Rocket"
-        )
-
-        # display lives
-        if self.player.lives > 1:
-            color_lives = arcade.color.YELLOW
-        else:
-            color_lives = arcade.color.RED
-        arcade.draw_text(
-            "Lives : ",
-            info_x, info_y_lives,
-            color_lives,
-            font_size,
-            font_name="Kenney Rocket"
-        )
-        self.draw_lives(info_x, info_y_lives)
-
-        # display time
-        if self.remaining_time > 5:
-            color_time = arcade.color.YELLOW
-        else:
-            color_time = arcade.color.RED
-        arcade.draw_text(
-            f"Time : {max(0, self.remaining_time)}",
-            info_x,
-            info_y_time,
-            color_time,
-            font_size,
-            font_name="Kenney Rocket"
-        )
-
-        # remaining time before respawn
-        if self.player.dead:
-            arcade.draw_text(
-                f"Respawn in : {int(self.time_before_respawn)}",
-                info_x,
-                info_y_time_respawn,
-                arcade.color.YELLOW,
-                font_size,
-                font_name="Kenney Rocket"
-            )
-        # cheatmode
-        if self.player.cheat_mode:
-            arcade.draw_text(
-                "CHEAT MODE",
-                info_x,
-                info_y_cheat_mode,
-                arcade.color.YELLOW,
-                font_size,
-                font_name="Kenney Rocket"
-            )
-
-    def display_info_left(self) -> None:
-        """Display controls on the left side of the maze."""
-        cell_size, offset_x, maze_top = self.grid_geometry()
-        scale = ui_scale(self.window)
-        font_size = int(20 * scale)
-
-        info_x = offset_x - 550 * scale
-        y_title = maze_top - 100 * scale
-
-        arcade.draw_text(
-            "[Commands]",
-            info_x,
-            y_title,
-            arcade.color.YELLOW,
-            font_size,
-            font_name="Kenney Rocket Square"
-        )
-        arcade.draw_text(
-            "> Normal Mode :",
-            info_x,
-            y_title - 100 * scale,
-            arcade.color.YELLOW,
-            font_size,
-            font_name="Kenney Rocket Square"
-        )
-        arcade.draw_text(
-            "- Move : (Key Arrows)",
-            info_x,
-            y_title - 150 * scale,
-            arcade.color.YELLOW,
-            font_size,
-            font_name="Kenney Rocket Square"
-        )
-        arcade.draw_text(
-            "- Pause : P",
-            info_x,
-            y_title - 200 * scale,
-            arcade.color.YELLOW,
-            font_size,
-            font_name="Kenney Rocket Square"
-        )
-        arcade.draw_text(
-            "> Cheat Mode :",
-            info_x,
-            y_title - 300 * scale,
-            arcade.color.YELLOW,
-            font_size,
-            font_name="Kenney Rocket Square"
-        )
-        arcade.draw_text(
-            "- Activate : C",
-            info_x,
-            y_title - 350 * scale,
-            arcade.color.YELLOW,
-            font_size,
-            font_name="Kenney Rocket Square"
-        )
-        arcade.draw_text(
-            "- Freeze Ghosts : G",
-            info_x,
-            y_title - 400 * scale,
-            arcade.color.YELLOW,
-            font_size,
-            font_name="Kenney Rocket Square"
-        )
-        arcade.draw_text(
-            "- Skip Level : N",
-            info_x,
-            y_title - 450 * scale,
-            arcade.color.YELLOW,
-            font_size,
-            font_name="Kenney Rocket Square"
-        )
-
     def on_draw(self) -> None:
         """Draw the walls and the pacgums on the screen."""
         self.clear()
 
-        cell_size, offset_x, maze_top = self.grid_geometry()
+        cell_size, offset_x, maze_top = self.geometry.grid_geometry()
 
         for r in range(self.rows):
             for c in range(self.cols):
@@ -325,7 +74,8 @@ class GameView(arcade.View):
                 top = maze_top - r * cell_size
                 bottom = top - cell_size
 
-                cx, cy = self.cell_center(r, c, cell_size, offset_x, maze_top)
+                cx, cy = self.geometry.cell_center(r, c, cell_size, offset_x,
+                                                   maze_top)
 
                 # fully-walled "42" cells are filled with the wall color
                 if cell.pattern_42:
@@ -347,16 +97,11 @@ class GameView(arcade.View):
                                      self.maze.assets.wall, WALL_WIDTH)
 
                 # display pacgums & super_pacgums (sized to the cell)
-                if self.config.theme == "minecraft":
-                    self.fit_to_cell(cell.sprite_pacgum, cell_size,
-                                     PACGUM_CELL_FRACTION_MINECRAFT)
-                    self.fit_to_cell(cell.sprite_super_pacgum, cell_size,
-                                     SUPER_PACGUM_CELL_FRACTION_MINECRAFT)
-                else:
-                    self.fit_to_cell(cell.sprite_pacgum, cell_size,
-                                     PACGUM_CELL_FRACTION)
-                    self.fit_to_cell(cell.sprite_super_pacgum, cell_size,
-                                     SUPER_PACGUM_CELL_FRACTION)
+                self.geometry.fit_to_cell(cell.sprite_pacgum, cell_size,
+                                          PACGUM_CELL_FRACTION)
+                self.geometry.fit_to_cell(cell.sprite_super_pacgum,
+                                          cell_size,
+                                          SUPER_PACGUM_CELL_FRACTION)
                 cell.sprite_pacgum.center_x = cx
                 cell.sprite_pacgum.center_y = cy
                 cell.sprite_super_pacgum.center_x = cx
@@ -371,69 +116,7 @@ class GameView(arcade.View):
                     cell.sprite_pacgum.visible = False
         self.maze.sprites.draw()
         self.maze.character_sprites.draw()
-        self.display_info_right()
-        self.display_info_left()
-
-    def on_key_press(self, key: int, _: int) -> None:
-        """Toggle fullscreen with F, go back to menu with Escape."""
-        from .menu_view import MenuView
-        if key == arcade.key.ESCAPE:
-            self.window.show_view(MenuView(self.config))
-
-        elif key == arcade.key.C:
-            if self.player.cheat_mode is False:
-                self.player.cheat_mode = True
-            else:
-                self.player.cheat_mode = False
-        elif key == arcade.key.G and self.player.cheat_mode is True:
-            if self.maze.ghost_freeze is True:
-                self.maze.ghost_freeze = False
-            else:
-                self.maze.ghost_freeze = True
-
-        # pass the level (Only in cheat mode)
-        elif key == arcade.key.N and self.player.cheat_mode:
-            if self.level == self.config.level:
-                from src.visualization import WinView
-                win = WinView(self.config, self.player.score)
-                self.window.show_view(win)
-            else:
-                from src.visualization import TransitionView
-                transition = TransitionView(self.config,
-                                            self.player.score,
-                                            self.player.lives,
-                                            self.level + 1,
-                                            self.player.cheat_mode)
-                self.window.show_view(transition)
-
-        # pause the game: freeze time and show the pause menu
-        elif key == arcade.key.P:
-            from .pause_view import PauseView
-            self.pause = True
-            self.pause_start = time.time()
-            self.window.show_view(PauseView(self))
-
-        # controls of the player
-        if not self.pause:
-            if key == arcade.key.UP:
-                self.player.move_up = True
-            elif key == arcade.key.DOWN:
-                self.player.move_down = True
-            elif key == arcade.key.LEFT:
-                self.player.move_left = True
-            elif key == arcade.key.RIGHT:
-                self.player.move_right = True
-
-    def on_key_release(self, key: int, _: int) -> None:
-        if not self.pause:
-            if key == arcade.key.UP:
-                self.player.move_up = False
-            elif key == arcade.key.DOWN:
-                self.player.move_down = False
-            elif key == arcade.key.LEFT:
-                self.player.move_left = False
-            elif key == arcade.key.RIGHT:
-                self.player.move_right = False
+        self.hud.draw()
 
     def resume(self) -> None:
         """Resume the game after a pause.
@@ -479,7 +162,6 @@ class GameView(arcade.View):
                     self.remaining_time_stock -= 1.0
 
             if self.remaining_time < 0:
-                # self.player.lives = -1
                 self.time_out = True
 
             if now - self.player.super_mode_start > SUPER_MODE_DELAY:
@@ -517,25 +199,26 @@ class GameView(arcade.View):
                 self.window.close()
 
             # update coordinates for ghosts
-            cell_size, offset_x, maze_top = self.grid_geometry()
+            cell_size, offset_x, maze_top = self.geometry.grid_geometry()
             for g in self.maze.ghosts:
                 if g.dead is True:
                     g.sprite.visible = False
                     continue
                 else:
                     g.sprite.visible = True
-                cx, cy = self.cell_center(
+                cx, cy = self.geometry.cell_center(
                     g.y, g.x,
                     cell_size,
                     offset_x,
                     maze_top,
                 )
-                self.fit_to_cell(g.sprite, cell_size, GHOST_CELL_FRACTION)
+                self.geometry.fit_to_cell(g.sprite, cell_size,
+                                          GHOST_CELL_FRACTION)
                 g.sprite.center_x = cx
                 g.sprite.center_y = cy
 
             # update coordinates for player
-            cx, cy = self.cell_center(
+            cx, cy = self.geometry.cell_center(
                 self.player.y, self.player.x,
                 cell_size, offset_x, maze_top
             )
@@ -556,7 +239,8 @@ class GameView(arcade.View):
                 return
 
             # Show the selected one (sized to the cell)
-            self.fit_to_cell(active_sprite, cell_size, PLAYER_CELL_FRACTION)
+            self.geometry.fit_to_cell(active_sprite, cell_size,
+                                      PLAYER_CELL_FRACTION)
             active_sprite.center_x = cx
             active_sprite.center_y = cy
 
@@ -579,3 +263,9 @@ class GameView(arcade.View):
                                                 self.level + 1,
                                                 self.player.cheat_mode)
                     self.window.show_view(transition)
+
+    def on_key_press(self, key: int, modifiers: int) -> None:
+        self.inputs.on_key_press(key, modifiers)
+
+    def on_key_release(self, key: int, modifiers: int) -> None:
+        self.inputs.on_key_release(key, modifiers)
