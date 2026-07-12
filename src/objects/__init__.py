@@ -1,7 +1,12 @@
-from .ghost import *  # NOQA 401
-from .player import *  # NOQA 401
-from .maze import *  # NOQA 401
-from .score import Score, InputName # NOQA 401
-from .assets import Assets # NOQA 401
+from .ghost import Ghost, move_ghosts
+from .player import Player
+from .maze import Maze
+from .score import Score, InputName
+from .assets import Assets
 
-__all__ = ["Score", "InputName", "Assets"]
+__all__ = ["Ghost",
+           "move_ghosts",
+           "Player",
+           "Maze",
+           "Score", "InputName",
+           "Assets"]
