@@ -33,4 +33,4 @@ fclean: clean
 	rm -rf .venv
 	rm -rf build dist
 
-.PHONY: install run debug lint lint-strict package clean fclean
+.PHONY: install run debug lint package clean fclean
