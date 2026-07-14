@@ -229,7 +229,7 @@ def load_config() -> Config:
         with open(config_path, "r") as file:
             clean_config = []
             for line in file:
-                if line.startswith("#"):
+                if line.lstrip().startswith("#"):
                     print(
                         f"\n{Colors.YELLOW}WARNING(CONFIG):\n{Colors.RESET}"
                         "Comment detected in config file, ignoring it. "
